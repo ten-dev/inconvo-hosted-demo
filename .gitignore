@@ -1,0 +1,35 @@
+# Dependencies
+node_modules
+.pnp*
+.pnp.js
+
+# Testing
+coverage
+*.lcov
+
+# Next.js build output
+.next
+out
+dist
+
+# Debug caches
+.turbo
+.vercel
+
+# Env files
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+
+# IDE/editor
+.DS_Store
+.idea
+.vscode
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
