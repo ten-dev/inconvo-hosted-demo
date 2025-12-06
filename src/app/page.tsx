@@ -652,7 +652,7 @@ function TablesDemo() {
               <IconSearch size={14} opacity={0.6} />
             )
           }
-          style={{ flex: "1 1 40%" }}
+          style={{ flex: "1 1 30%" }}
         />
 
         <SegmentedControl
@@ -660,7 +660,7 @@ function TablesDemo() {
           data={filterOptions}
           value={filter}
           onChange={(value) => setFilter(value as AccessFilterKey)}
-          style={{ flex: "1 1 60%" }}
+          style={{ flex: "1 1 70%" }}
         />
       </Group>
       {filteredIds.length === 0 ? (
