@@ -22,6 +22,7 @@ dist
 .env.development
 .env.test
 .env.production
+.env
 
 # IDE/editor
 .DS_Store

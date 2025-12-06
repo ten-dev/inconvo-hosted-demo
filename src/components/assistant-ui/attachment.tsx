@@ -1,6 +1,7 @@
 "use client";
 
-import { PropsWithChildren, useEffect, useState, type FC } from "react";
+import { useEffect, useState } from "react";
+import type { FC, PropsWithChildren } from "react";
 import Image from "next/image";
 import { XIcon, PlusIcon, FileText } from "lucide-react";
 import {
