@@ -3,7 +3,7 @@
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActionIcon,
   Badge,
@@ -577,27 +577,108 @@ const accessFilterMap: Record<AccessFilterKey, TableAccess[]> = {
 };
 
 export default function HomePage() {
+  const [topHeight, setTopHeight] = useState(50); // percentage
+  const [isDragging, setIsDragging] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging) return;
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    const rect = container.getBoundingClientRect();
+    const newTopHeight = ((e.clientY - rect.top) / rect.height) * 100;
+
+    // Clamp between 20% and 80%
+    setTopHeight(Math.min(Math.max(newTopHeight, 20), 80));
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseDown = () => {
+    setIsDragging(true);
+  };
+
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      return () => {
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+      };
+    }
+  }, [isDragging]);
+
   return (
     <Assistant>
       <MantineProvider defaultColorScheme="light">
         <main className="bg-background text-foreground flex min-h-screen flex-col">
           <Container size="xl" py="lg" style={{ height: "calc(100vh - 2rem)" }}>
-            <Flex direction="column" gap="md" style={{ height: "100%" }}>
+            <Flex
+              direction="column"
+              style={{ height: "100%", position: "relative" }}
+              ref={containerRef}
+            >
               <Card
                 withBorder
                 shadow="sm"
                 radius="lg"
-                style={{ flex: "1 1 50%", overflow: "auto" }}
+                style={{
+                  height: `${topHeight}%`,
+                  overflow: "auto",
+                  marginBottom: 0,
+                }}
               >
                 <TablesDemo />
               </Card>
+
+              <Box
+                style={{
+                  height: "8px",
+                  cursor: "ns-resize",
+                  backgroundColor: isDragging ? "#228be6" : "transparent",
+                  transition: isDragging ? "none" : "background-color 0.2s",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  position: "relative",
+                  zIndex: 10,
+                }}
+                onMouseDown={handleMouseDown}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#e7f5ff";
+                }}
+                onMouseLeave={(e) => {
+                  if (!isDragging) {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }
+                }}
+              >
+                <Box
+                  style={{
+                    width: "40px",
+                    height: "4px",
+                    backgroundColor: "#adb5bd",
+                    borderRadius: "2px",
+                  }}
+                />
+              </Box>
+
               <Card
                 withBorder
                 shadow="sm"
                 radius="lg"
-                style={{ flex: "1 1 50%", overflow: "auto" }}
+                style={{
+                  height: `${100 - topHeight}%`,
+                  overflow: "auto",
+                  marginTop: 0,
+                }}
               >
-                <Title>Database</Title>
+                <Title order={3}>Database</Title>
               </Card>
             </Flex>
           </Container>
@@ -646,7 +727,7 @@ function TablesDemo() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Title>Semantic Model</Title>
+      <Title order={3}>Semantic Model</Title>
       <Group justify="space-between" wrap="nowrap" gap="md">
         <TextInput
           placeholder="Search tables..."
