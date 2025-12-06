@@ -581,10 +581,25 @@ export default function HomePage() {
     <Assistant>
       <MantineProvider defaultColorScheme="light">
         <main className="bg-background text-foreground flex min-h-screen flex-col">
-          <Container size="xl" py="lg">
-            <Card withBorder shadow="sm" radius="lg">
-              <TablesDemo />
-            </Card>
+          <Container size="xl" py="lg" style={{ height: "calc(100vh - 2rem)" }}>
+            <Flex direction="column" gap="md" style={{ height: "100%" }}>
+              <Card
+                withBorder
+                shadow="sm"
+                radius="lg"
+                style={{ flex: "1 1 50%", overflow: "auto" }}
+              >
+                <TablesDemo />
+              </Card>
+              <Card
+                withBorder
+                shadow="sm"
+                radius="lg"
+                style={{ flex: "1 1 50%", overflow: "auto" }}
+              >
+                <Title>Database</Title>
+              </Card>
+            </Flex>
           </Container>
         </main>
       </MantineProvider>
@@ -631,7 +646,7 @@ function TablesDemo() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Title>Inconvo Semantic Model</Title>
+      <Title>Semantic Model</Title>
       <Group justify="space-between" wrap="nowrap" gap="md">
         <TextInput
           placeholder="Search tables..."
