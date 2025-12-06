@@ -598,9 +598,7 @@ function TablesDemo() {
   );
   const [debouncedSearch] = useDebouncedValue(searchValue, 200);
   const [filter, setFilter] = useState<AccessFilterKey>("active");
-  const [expandedTableId, setExpandedTableId] = useState<string | null>(
-    DATABASE_FIXTURE.summary.tableIds[0]?.id ?? null,
-  );
+  const [expandedTableId, setExpandedTableId] = useState<string | null>(null);
 
   const filteredIds = useMemo(() => {
     const allowed = accessFilterMap[filter];
