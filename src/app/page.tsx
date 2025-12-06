@@ -808,11 +808,12 @@ function TableRowView({ table, isExpanded, onToggle }: TableRowProps) {
           <Table.Td colSpan={3} p={0}>
             <Collapse in={isExpanded} transitionDuration={200}>
               <Card radius={0} withBorder>
-                <Box style={{ flex: 1 }}>
-                  <Box mb="md">
-                    <Badge color="teal" size="sm">
-                      Columns
-                    </Badge>
+                <ScrollArea h={rem(520)} offsetScrollbars>
+                  <Box style={{ flex: 1 }}>
+                    <Box mb="md">
+                      <Badge color="teal" size="sm">
+                        Columns
+                      </Badge>
                     <ColumnsTable
                       title="Active columns"
                       columns={activeColumns}
@@ -874,11 +875,11 @@ function TableRowView({ table, isExpanded, onToggle }: TableRowProps) {
                     />
                   </Box>
 
-                  <Box mt="md">
-                    <Badge color="grape" size="sm">
-                      Context
-                    </Badge>
-                    <Card withBorder shadow="xs" p="md" mt="xs">
+                    <Box mt="md">
+                      <Badge color="grape" size="sm">
+                        Context
+                      </Badge>
+                      <Card withBorder shadow="xs" p="md" mt="xs">
                       <Group gap="xs">
                         <IconInfoCircle size={16} />
                         <Text fw={600} fz="sm">
@@ -888,9 +889,10 @@ function TableRowView({ table, isExpanded, onToggle }: TableRowProps) {
                       <Text fz="sm" mt="sm">
                         {table.contextPrompt ?? "No custom table prompt configured."}
                       </Text>
-                    </Card>
+                      </Card>
+                    </Box>
                   </Box>
-                </Box>
+                </ScrollArea>
               </Card>
             </Collapse>
           </Table.Td>
