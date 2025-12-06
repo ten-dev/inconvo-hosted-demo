@@ -808,86 +808,81 @@ function TableRowView({ table, isExpanded, onToggle }: TableRowProps) {
           <Table.Td colSpan={3} p={0}>
             <Collapse in={isExpanded} transitionDuration={200}>
               <Card radius={0} withBorder>
-                <Flex gap="lg" direction={{ base: "column", md: "row" }}>
-                  <Box style={{ flex: 1 }}>
-                    <Box mb="md">
-                      <Badge color="teal" size="sm">
-                        Columns
-                      </Badge>
-                      <ColumnsTable
-                        title="Active columns"
-                        columns={activeColumns}
-                        computedColumns={activeComputed}
-                        isOpen={activeExpanded}
-                        toggle={() => setActiveExpanded((value) => !value)}
-                      />
-                      <ColumnsTable
-                        title="Inactive columns"
-                        columns={inactiveColumns}
-                        computedColumns={inactiveComputed}
-                        isOpen={inactiveExpanded}
-                        toggle={() => setInactiveExpanded((value) => !value)}
-                        muted
-                      />
-                    </Box>
-
-                    <Box mb="md">
-                      <Badge color="blue" size="sm">
-                        Where condition
-                      </Badge>
-                      <Code block mt="xs">
-                        {table.condition ? (
-                          <Text fz="sm">
-                            Where {table.name}.{table.condition.column.name} = requestContext.
-                            {table.condition.requestContextField.key}
-                          </Text>
-                        ) : (
-                          <Text fz="sm" c="dimmed">
-                            No row-level filter configured.
-                          </Text>
-                        )}
-                      </Code>
-                    </Box>
-
-                    <Box>
-                      <Badge color="violet" size="sm">
-                        Relations
-                      </Badge>
-                      <RelationsTable
-                        title="Active relations"
-                        relations={activeRelations}
-                        isOpen={relationActiveExpanded}
-                        toggle={() =>
-                          setRelationActiveExpanded((value) => !value)
-                        }
-                      />
-                      <RelationsTable
-                        title="Inactive relations"
-                        relations={inactiveRelations}
-                        isOpen={relationInactiveExpanded}
-                        toggle={() =>
-                          setRelationInactiveExpanded((value) => !value)
-                        }
-                        muted
-                      />
-                      <RelationsTable
-                        title="Disabled relations"
-                        relations={disabledRelations}
-                        isOpen={relationDisabledExpanded}
-                        toggle={() =>
-                          setRelationDisabledExpanded((value) => !value)
-                        }
-                        muted
-                      />
-                    </Box>
+                <Box style={{ flex: 1 }}>
+                  <Box mb="md">
+                    <Badge color="teal" size="sm">
+                      Columns
+                    </Badge>
+                    <ColumnsTable
+                      title="Active columns"
+                      columns={activeColumns}
+                      computedColumns={activeComputed}
+                      isOpen={activeExpanded}
+                      toggle={() => setActiveExpanded((value) => !value)}
+                    />
+                    <ColumnsTable
+                      title="Inactive columns"
+                      columns={inactiveColumns}
+                      computedColumns={inactiveComputed}
+                      isOpen={inactiveExpanded}
+                      toggle={() => setInactiveExpanded((value) => !value)}
+                      muted
+                    />
                   </Box>
 
-                  <Box style={{ flex: "0 0 320px" }}>
-                    <Card withBorder shadow="xs" p="md">
+                  <Box mb="md">
+                    <Badge color="blue" size="sm">
+                      Where condition
+                    </Badge>
+                    <Code block mt="xs">
+                      {table.condition ? (
+                        <Text fz="sm">
+                          Where {table.name}.{table.condition.column.name} = requestContext.
+                          {table.condition.requestContextField.key}
+                        </Text>
+                      ) : (
+                        <Text fz="sm" c="dimmed">
+                          No row-level filter configured.
+                        </Text>
+                      )}
+                    </Code>
+                  </Box>
+
+                  <Box>
+                    <Badge color="violet" size="sm">
+                      Relations
+                    </Badge>
+                    <RelationsTable
+                      title="Active relations"
+                      relations={activeRelations}
+                      isOpen={relationActiveExpanded}
+                      toggle={() => setRelationActiveExpanded((value) => !value)}
+                    />
+                    <RelationsTable
+                      title="Inactive relations"
+                      relations={inactiveRelations}
+                      isOpen={relationInactiveExpanded}
+                      toggle={() => setRelationInactiveExpanded((value) => !value)}
+                      muted
+                    />
+                    <RelationsTable
+                      title="Disabled relations"
+                      relations={disabledRelations}
+                      isOpen={relationDisabledExpanded}
+                      toggle={() => setRelationDisabledExpanded((value) => !value)}
+                      muted
+                    />
+                  </Box>
+
+                  <Box mt="md">
+                    <Badge color="grape" size="sm">
+                      Context
+                    </Badge>
+                    <Card withBorder shadow="xs" p="md" mt="xs">
                       <Group gap="xs">
                         <IconInfoCircle size={16} />
                         <Text fw={600} fz="sm">
-                          Context
+                          Table prompt
                         </Text>
                       </Group>
                       <Text fz="sm" mt="sm">
@@ -895,7 +890,7 @@ function TableRowView({ table, isExpanded, onToggle }: TableRowProps) {
                       </Text>
                     </Card>
                   </Box>
-                </Flex>
+                </Box>
               </Card>
             </Collapse>
           </Table.Td>
