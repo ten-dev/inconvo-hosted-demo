@@ -24,6 +24,7 @@ import {
   Tooltip,
   rem,
   Code,
+  Title,
 } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 import {
@@ -46,7 +47,7 @@ const tableAccessLabels = {
   QUERYABLE: { label: "Queryable", color: "green" },
   JOINABLE: { label: "Joinable", color: "orange" },
   OFF: { label: "Off", color: "gray" },
- } as const;
+} as const;
 
 type TableAccess = keyof typeof tableAccessLabels;
 
@@ -593,12 +594,12 @@ export default function HomePage() {
 
 function TablesDemo() {
   const [searchValue, setSearchValue] = useState(
-    DATABASE_FIXTURE.summary.searchQuery
+    DATABASE_FIXTURE.summary.searchQuery,
   );
   const [debouncedSearch] = useDebouncedValue(searchValue, 200);
   const [filter, setFilter] = useState<AccessFilterKey>("active");
   const [expandedTableId, setExpandedTableId] = useState<string | null>(
-    DATABASE_FIXTURE.summary.tableIds[0]?.id ?? null
+    DATABASE_FIXTURE.summary.tableIds[0]?.id ?? null,
   );
 
   const filteredIds = useMemo(() => {
@@ -632,22 +633,26 @@ function TablesDemo() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Group justify="space-between" wrap="wrap" gap="md">
+      <Title>Inconvo Semantic Model</Title>
+      <Group justify="space-between" wrap="nowrap" gap="md">
         <TextInput
           placeholder="Search tables..."
           value={searchValue}
           onChange={(event) => setSearchValue(event.currentTarget.value)}
           rightSection={
             searchValue ? (
-              <ActionIcon size="sm" variant="subtle" onClick={() => setSearchValue("")}
->
+              <ActionIcon
+                size="sm"
+                variant="subtle"
+                onClick={() => setSearchValue("")}
+              >
                 <IconX size={14} />
               </ActionIcon>
             ) : (
               <IconSearch size={14} opacity={0.6} />
             )
           }
-          style={{ flexGrow: 1, minWidth: rem(260) }}
+          style={{ flex: "1 1 40%" }}
         />
 
         <SegmentedControl
@@ -655,9 +660,9 @@ function TablesDemo() {
           data={filterOptions}
           value={filter}
           onChange={(value) => setFilter(value as AccessFilterKey)}
+          style={{ flex: "1 1 60%" }}
         />
       </Group>
-
       {filteredIds.length === 0 ? (
         <Card withBorder radius="md" ta="center" py="lg">
           <Text c="dimmed" fz="sm">
@@ -691,7 +696,6 @@ function TablesDemo() {
           </Table>
         </ScrollArea>
       )}
-
       {DATABASE_FIXTURE.summary.totalTables > 20 && (
         <Group justify="center" mt="xl">
           <Pagination
@@ -715,26 +719,31 @@ function TableRowView({ table, isExpanded, onToggle }: TableRowProps) {
   const [activeExpanded, setActiveExpanded] = useState(true);
   const [inactiveExpanded, setInactiveExpanded] = useState(false);
   const [relationActiveExpanded, setRelationActiveExpanded] = useState(true);
-  const [relationInactiveExpanded, setRelationInactiveExpanded] = useState(false);
-  const [relationDisabledExpanded, setRelationDisabledExpanded] = useState(false);
+  const [relationInactiveExpanded, setRelationInactiveExpanded] =
+    useState(false);
+  const [relationDisabledExpanded, setRelationDisabledExpanded] =
+    useState(false);
 
   const activeColumns = table.columns.filter((column) => column.selected);
   const inactiveColumns = table.columns.filter((column) => !column.selected);
-  const activeComputed = table.computedColumns.filter((column) => column.selected);
-  const inactiveComputed = table.computedColumns.filter((column) => !column.selected);
+  const activeComputed = table.computedColumns.filter(
+    (column) => column.selected,
+  );
+  const inactiveComputed = table.computedColumns.filter(
+    (column) => !column.selected,
+  );
   const activeRelations = table.outwardRelations.filter(
     (relation) =>
       relation.selected &&
       relation.status === "VALID" &&
-      relation.targetTable.access !== "OFF"
+      relation.targetTable.access !== "OFF",
   );
   const inactiveRelations = table.outwardRelations.filter(
-    (relation) =>
-      !relation.selected && relation.targetTable.access !== "OFF"
+    (relation) => !relation.selected && relation.targetTable.access !== "OFF",
   );
   const disabledRelations = table.outwardRelations.filter(
     (relation) =>
-      relation.targetTable.access === "OFF" || relation.status === "BROKEN"
+      relation.targetTable.access === "OFF" || relation.status === "BROKEN",
   );
 
   return (
@@ -759,7 +768,11 @@ function TableRowView({ table, isExpanded, onToggle }: TableRowProps) {
               )}
             </div>
             <ActionIcon variant="subtle" onClick={onToggle}>
-              {isExpanded ? <IconChevronUp size={16} /> : <IconChevronDown size={16} />}
+              {isExpanded ? (
+                <IconChevronUp size={16} />
+              ) : (
+                <IconChevronDown size={16} />
+              )}
             </ActionIcon>
           </Group>
         </Table.Td>
@@ -814,81 +827,89 @@ function TableRowView({ table, isExpanded, onToggle }: TableRowProps) {
                       <Badge color="teal" size="sm">
                         Columns
                       </Badge>
-                    <ColumnsTable
-                      title="Active columns"
-                      columns={activeColumns}
-                      computedColumns={activeComputed}
-                      isOpen={activeExpanded}
-                      toggle={() => setActiveExpanded((value) => !value)}
-                    />
-                    <ColumnsTable
-                      title="Inactive columns"
-                      columns={inactiveColumns}
-                      computedColumns={inactiveComputed}
-                      isOpen={inactiveExpanded}
-                      toggle={() => setInactiveExpanded((value) => !value)}
-                      muted
-                    />
-                  </Box>
+                      <ColumnsTable
+                        title="Active columns"
+                        columns={activeColumns}
+                        computedColumns={activeComputed}
+                        isOpen={activeExpanded}
+                        toggle={() => setActiveExpanded((value) => !value)}
+                      />
+                      <ColumnsTable
+                        title="Inactive columns"
+                        columns={inactiveColumns}
+                        computedColumns={inactiveComputed}
+                        isOpen={inactiveExpanded}
+                        toggle={() => setInactiveExpanded((value) => !value)}
+                        muted
+                      />
+                    </Box>
 
-                  <Box mb="md">
-                    <Badge color="blue" size="sm">
-                      Where condition
-                    </Badge>
-                    <Code block mt="xs">
-                      {table.condition ? (
-                        <Text fz="sm">
-                          Where {table.name}.{table.condition.column.name} = requestContext.
-                          {table.condition.requestContextField.key}
-                        </Text>
-                      ) : (
-                        <Text fz="sm" c="dimmed">
-                          No row-level filter configured.
-                        </Text>
-                      )}
-                    </Code>
-                  </Box>
+                    <Box mb="md">
+                      <Badge color="blue" size="sm">
+                        Where condition
+                      </Badge>
+                      <Code block mt="xs">
+                        {table.condition ? (
+                          <Text fz="sm">
+                            Where {table.name}.{table.condition.column.name} =
+                            requestContext.
+                            {table.condition.requestContextField.key}
+                          </Text>
+                        ) : (
+                          <Text fz="sm" c="dimmed">
+                            No row-level filter configured.
+                          </Text>
+                        )}
+                      </Code>
+                    </Box>
 
-                  <Box>
-                    <Badge color="violet" size="sm">
-                      Relations
-                    </Badge>
-                    <RelationsTable
-                      title="Active relations"
-                      relations={activeRelations}
-                      isOpen={relationActiveExpanded}
-                      toggle={() => setRelationActiveExpanded((value) => !value)}
-                    />
-                    <RelationsTable
-                      title="Inactive relations"
-                      relations={inactiveRelations}
-                      isOpen={relationInactiveExpanded}
-                      toggle={() => setRelationInactiveExpanded((value) => !value)}
-                      muted
-                    />
-                    <RelationsTable
-                      title="Disabled relations"
-                      relations={disabledRelations}
-                      isOpen={relationDisabledExpanded}
-                      toggle={() => setRelationDisabledExpanded((value) => !value)}
-                      muted
-                    />
-                  </Box>
+                    <Box>
+                      <Badge color="violet" size="sm">
+                        Relations
+                      </Badge>
+                      <RelationsTable
+                        title="Active relations"
+                        relations={activeRelations}
+                        isOpen={relationActiveExpanded}
+                        toggle={() =>
+                          setRelationActiveExpanded((value) => !value)
+                        }
+                      />
+                      <RelationsTable
+                        title="Inactive relations"
+                        relations={inactiveRelations}
+                        isOpen={relationInactiveExpanded}
+                        toggle={() =>
+                          setRelationInactiveExpanded((value) => !value)
+                        }
+                        muted
+                      />
+                      <RelationsTable
+                        title="Disabled relations"
+                        relations={disabledRelations}
+                        isOpen={relationDisabledExpanded}
+                        toggle={() =>
+                          setRelationDisabledExpanded((value) => !value)
+                        }
+                        muted
+                      />
+                    </Box>
 
                     <Box mt="md">
                       <Badge color="grape" size="sm">
                         Context
                       </Badge>
                       <Card withBorder shadow="xs" p="md" mt="xs">
-                      <Group gap="xs">
-                        <IconInfoCircle size={16} />
-                        <Text fw={600} fz="sm">
-                          Table prompt
+                        <Group gap="xs">
+                          <IconInfoCircle size={16} />
+                          <Text fw={600} fz="sm">
+                            Table prompt
+                          </Text>
+                        </Group>
+                        <Text fz="sm" mt="sm">
+                          {table.contextPrompt ??
+                            "No custom table prompt configured."}
                         </Text>
-                      </Group>
-                      <Text fz="sm" mt="sm">
-                        {table.contextPrompt ?? "No custom table prompt configured."}
-                      </Text>
                       </Card>
                     </Box>
                   </Box>
@@ -924,8 +945,18 @@ function ColumnsTable({
   }
 
   return (
-    <Card withBorder radius="md" mt="sm" p="xs" bg={muted ? "gray.0" : undefined}>
-      <Group justify="space-between" onClick={toggle} style={{ cursor: "pointer" }}>
+    <Card
+      withBorder
+      radius="md"
+      mt="sm"
+      p="xs"
+      bg={muted ? "gray.0" : undefined}
+    >
+      <Group
+        justify="space-between"
+        onClick={toggle}
+        style={{ cursor: "pointer" }}
+      >
         <Text fw={600} fz="sm">
           {title} ({columns.length + computedColumns.length})
         </Text>
@@ -1029,8 +1060,18 @@ function RelationsTable({
   }
 
   return (
-    <Card withBorder radius="md" mt="sm" p="xs" bg={muted ? "gray.0" : undefined}>
-      <Group justify="space-between" onClick={toggle} style={{ cursor: "pointer" }}>
+    <Card
+      withBorder
+      radius="md"
+      mt="sm"
+      p="xs"
+      bg={muted ? "gray.0" : undefined}
+    >
+      <Group
+        justify="space-between"
+        onClick={toggle}
+        style={{ cursor: "pointer" }}
+      >
         <Text fw={600} fz="sm">
           {title} ({relations.length})
         </Text>
@@ -1075,7 +1116,13 @@ function RelationsTable({
                 <Table.Td>
                   <Group gap={6} wrap="wrap" align="center">
                     <Text>{relation.targetTable.name}</Text>
-                    <Badge size="xs" variant="light" color={tableAccessLabels[relation.targetTable.access].color}>
+                    <Badge
+                      size="xs"
+                      variant="light"
+                      color={
+                        tableAccessLabels[relation.targetTable.access].color
+                      }
+                    >
                       {tableAccessLabels[relation.targetTable.access].label}
                     </Badge>
                     {relation.isList && (
@@ -1089,7 +1136,8 @@ function RelationsTable({
                   <Text fz="xs" c="dimmed">
                     {relation.columnMappings
                       .map(
-                        (mapping) => `${mapping.sourceColumnName} → ${mapping.targetColumnName}`
+                        (mapping) =>
+                          `${mapping.sourceColumnName} → ${mapping.targetColumnName}`,
                       )
                       .join(", ") || "—"}
                     {relation.errorTag ? ` · ${relation.errorTag}` : ""}
