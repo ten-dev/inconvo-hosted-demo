@@ -67,7 +67,7 @@ const getSectionSurfaceStyle = (
     options.backgroundColor ?? "var(--mantine-color-white, #ffffff)",
   boxShadow: "0 1px 2px rgba(16, 24, 40, 0.05)",
   overflow: "hidden",
-  padding: options.padded ? rem(16) : undefined,
+  padding: options.padded ? rem(12) : undefined,
 });
 
 export default function HomePage() {
@@ -196,7 +196,7 @@ export default function HomePage() {
                   marginTop: 0,
                 }}
               >
-                <Title order={3}>Example Data</Title>
+                <Title order={4}>Example Data</Title>
                 <DatabaseViewer activeTableId={focusedTableId} />
               </Card>
             </Flex>
@@ -215,7 +215,7 @@ function SemanticTableView({ table }: SemanticTableViewProps) {
   if (!table) {
     return (
       <div className="flex flex-col gap-4">
-        <Title order={3}>Semantic Model</Title>
+        <Title order={4}>Semantic Model</Title>
         <Card withBorder radius="md" p="md">
           <Text fz="sm" c="dimmed">
             Select a table to inspect its semantic configuration.
@@ -228,10 +228,10 @@ function SemanticTableView({ table }: SemanticTableViewProps) {
   const computedColumns = table.computedColumns ?? [];
 
   return (
-    <div className="flex flex-col gap-4">
-      <Title order={3}>Semantic Model</Title>
-      <Card withBorder radius="lg" p="lg">
-        <Stack gap="xl">
+    <div className="flex flex-col gap-3">
+      <Title order={4}>Semantic Model</Title>
+      <Card withBorder radius="lg" p="md">
+        <Stack gap="md">
           <SemanticColumnsSection
             columns={table.columns}
             computedColumns={computedColumns}
@@ -274,7 +274,12 @@ function SemanticColumnsSection({
         countLabel={`Active Columns (${rows.length})`}
       />
       <Box style={getSectionSurfaceStyle()}>
-        <Table horizontalSpacing="lg" verticalSpacing="md" highlightOnHover>
+        <Table
+          horizontalSpacing="sm"
+          verticalSpacing="xs"
+          highlightOnHover
+          style={{ fontSize: rem(12) }}
+        >
           <Table.Thead
             style={{
               backgroundColor: "var(--mantine-color-gray-0)",
@@ -307,7 +312,9 @@ function SemanticColumnsSection({
                   </Table.Td>
                   <Table.Td>
                     <Group gap="xs" align="flex-start">
-                      <Text fw={500}>{row.column.name}</Text>
+                      <Text fw={600} fz="xs">
+                        {row.column.name}
+                      </Text>
                       {row.kind === "computed" && (
                         <Badge size="xs" color="teal" variant="light">
                           Computed
@@ -330,14 +337,14 @@ function SemanticColumnsSection({
                       </Tooltip>
                     </Group>
                     {row.kind === "computed" && (
-                      <Text fz="xs" c="dimmed" mt={4}>
+                      <Text fz="xs" c="dimmed" mt={2}>
                         = <Code fz="xs">{row.column.expression}</Code>
                       </Text>
                     )}
                   </Table.Td>
                   <Table.Td>
                     <Group gap="xs">
-                      <Text fz="sm">{row.column.type}</Text>
+                      <Text fz="xs">{row.column.type}</Text>
                       {"unit" in row.column && row.column.unit && (
                         <Badge size="xs" variant="light">
                           {row.column.unit}
@@ -411,7 +418,12 @@ function SemanticRelationsSection({
         }
       />
       <Box style={getSectionSurfaceStyle()}>
-        <Table horizontalSpacing="lg" verticalSpacing="md" highlightOnHover>
+        <Table
+          horizontalSpacing="sm"
+          verticalSpacing="xs"
+          highlightOnHover
+          style={{ fontSize: rem(12) }}
+        >
           <Table.Thead
             style={{
               backgroundColor: "var(--mantine-color-gray-0)",
@@ -437,19 +449,23 @@ function SemanticRelationsSection({
                   />
                 </Table.Td>
                 <Table.Td>
-                  <Text fw={500}>{relation.name}</Text>
+                  <Text fw={600} fz="xs">
+                    {relation.name}
+                  </Text>
                   <Text fz="xs" c="dimmed">
                     {formatRelationMappings(relation)}
                   </Text>
                 </Table.Td>
                 <Table.Td>
-                  <Text>{relation.targetTable}</Text>
+                  <Text fz="xs">{relation.targetTable}</Text>
                   <Text fz="xs" c="dimmed">
                     {relation.isList ? "One-to-many" : "One-to-one"}
                   </Text>
                 </Table.Td>
                 <Table.Td style={{ textAlign: "right" }}>
-                  <Text c="dimmed">—</Text>
+                  <Text c="dimmed" fz="xs">
+                    —
+                  </Text>
                 </Table.Td>
               </Table.Tr>
             ))}
@@ -475,8 +491,8 @@ function SemanticContextSection({ context }: SemanticContextSectionProps) {
         })}
       >
         <Group gap="xs" align="flex-start">
-          <IconInfoCircle size={16} />
-          <Text fz="sm">{context}</Text>
+          <IconInfoCircle size={14} />
+          <Text fz="xs">{context}</Text>
         </Group>
       </Box>
     </Box>
@@ -499,12 +515,12 @@ function SemanticSectionHeader({
   const showMeta = Boolean(countLabel ?? action);
 
   return (
-    <Group justify="space-between" mb="xs" align="center">
-      <Badge color={color} size="sm" radius="sm">
+    <Group justify="space-between" mb={4} align="center">
+      <Badge color={color} size="xs" radius="sm">
         {label.toUpperCase()}
       </Badge>
       {showMeta && (
-        <Group gap="xs">
+        <Group gap={6}>
           {countLabel && (
             <Text fz="xs" c="dimmed">
               {countLabel}
