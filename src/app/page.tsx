@@ -205,15 +205,24 @@ export default function HomePage() {
             }}
           >
             <Box mb="md">
-              <Group justify="space-between" align="center" mb={rem(6)}>
-                <Title
-                  order={3}
-                  style={{
-                    fontWeight: 600,
-                  }}
-                >
-                  Inconvo Demo
-                </Title>
+              <Group justify="space-between" align="center" mb={rem(8)}>
+                <Group gap="sm" align="center">
+                  <img
+                    src="/logo.png"
+                    alt="Inconvo Logo"
+                    width={32}
+                    height={32}
+                    style={{ display: "block", flexShrink: 0 }}
+                  />
+                  <Title
+                    order={3}
+                    style={{
+                      fontWeight: 600,
+                    }}
+                  >
+                    Inconvo Demo
+                  </Title>
+                </Group>
                 <ActionIcon
                   variant="subtle"
                   color="gray"
