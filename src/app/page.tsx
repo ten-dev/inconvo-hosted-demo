@@ -131,6 +131,29 @@ export default function HomePage() {
             }}
           >
             <Box mb="md">
+              <Group justify="space-between" align="center" mb={rem(6)}>
+                <Title
+                  order={3}
+                  style={{
+                    fontWeight: 600,
+                  }}
+                >
+                  Inconvo Demo
+                </Title>
+                <ActionIcon
+                  variant="subtle"
+                  color="gray"
+                  size="lg"
+                  radius="xl"
+                  onClick={() => {
+                    // Add your info click handler here
+                    console.log("Info icon clicked");
+                  }}
+                  aria-label="Information"
+                >
+                  <IconInfoCircle size={20} />
+                </ActionIcon>
+              </Group>
               <DatabaseSelector
                 activeTableId={focusedTableId}
                 onSelect={(id) => setFocusedTableId(id)}
@@ -196,7 +219,9 @@ export default function HomePage() {
                   marginTop: 0,
                 }}
               >
-                <Title order={4} mb="xs">Example Data</Title>
+                <Title order={6} mb="xs">
+                  Example Data
+                </Title>
                 <DatabaseViewer activeTableId={focusedTableId} />
               </Card>
             </Flex>
@@ -215,7 +240,7 @@ function SemanticTableView({ table }: SemanticTableViewProps) {
   if (!table) {
     return (
       <div className="flex flex-col gap-4">
-        <Title order={4}>Semantic Model</Title>
+        <Title order={6}>Semantic Model</Title>
         <Card withBorder radius="md" p="md">
           <Text fz="sm" c="dimmed">
             Select a table to inspect its semantic configuration.
@@ -229,7 +254,7 @@ function SemanticTableView({ table }: SemanticTableViewProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      <Title order={4}>Semantic Model</Title>
+      <Title order={6}>Semantic Model</Title>
       <Card withBorder radius="lg" p="md">
         <Stack gap="md">
           {table.context && <SemanticContextSection context={table.context} />}
