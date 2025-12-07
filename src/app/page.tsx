@@ -3,24 +3,40 @@
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 
-import { useEffect, useRef, useState } from "react";
 import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
+import {
+  ActionIcon,
   Badge,
   Box,
+  Button,
   Card,
+  Checkbox,
   Flex,
   Group,
   MantineProvider,
   Pagination,
   ScrollArea,
   SegmentedControl,
+  Stack,
   Table,
   Text,
+  Tooltip,
   rem,
   Code,
   Title,
 } from "@mantine/core";
-import { IconInfoCircle } from "@tabler/icons-react";
+import {
+  IconInfoCircle,
+  IconNote,
+  IconPencil,
+  IconTrash,
+} from "@tabler/icons-react";
 
 import { Assistant } from "./assistant";
 import {
@@ -36,6 +52,23 @@ import {
 const DATABASE_VIEWER_TABLE_WIDTH = 640;
 
 const DEFAULT_TABLE_ID = SEMANTIC_TABLES[0]?.id ?? null;
+
+type SectionSurfaceOptions = {
+  padded?: boolean;
+  backgroundColor?: string;
+};
+
+const getSectionSurfaceStyle = (
+  options: SectionSurfaceOptions = {},
+): CSSProperties => ({
+  border: "1px solid var(--mantine-color-gray-3, #dee2e6)",
+  borderRadius: rem(12),
+  backgroundColor:
+    options.backgroundColor ?? "var(--mantine-color-white, #ffffff)",
+  boxShadow: "0 1px 2px rgba(16, 24, 40, 0.05)",
+  overflow: "hidden",
+  padding: options.padded ? rem(16) : undefined,
+});
 
 export default function HomePage() {
   const [topHeight, setTopHeight] = useState(50); // percentage
@@ -163,10 +196,8 @@ export default function HomePage() {
                   marginTop: 0,
                 }}
               >
-                <Title order={3}>Database</Title>
-                <DatabaseViewer
-                  activeTableId={focusedTableId}
-                />
+                <Title order={3}>Example Data</Title>
+                <DatabaseViewer activeTableId={focusedTableId} />
               </Card>
             </Flex>
           </Box>
@@ -195,195 +226,308 @@ function SemanticTableView({ table }: SemanticTableViewProps) {
   }
 
   const computedColumns = table.computedColumns ?? [];
-  const hasContext = Boolean(table.context);
 
   return (
     <div className="flex flex-col gap-4">
       <Title order={3}>Semantic Model</Title>
-      <Card withBorder radius="md" p="md">
-        {hasContext && (
-          <Box mb="md">
-            <Badge color="grape" size="sm" variant="light">
-              Context
-            </Badge>
-            <Card withBorder shadow="xs" p="md" mt="xs">
-              <Group gap="xs" align="flex-start">
-                <IconInfoCircle size={16} />
-                <Text fz="sm">{table.context}</Text>
-              </Group>
-            </Card>
-          </Box>
-        )}
+      <Card withBorder radius="lg" p="lg">
+        <Stack gap="xl">
+          <SemanticColumnsSection
+            columns={table.columns}
+            computedColumns={computedColumns}
+          />
 
-        <SemanticColumnsTable columns={table.columns} />
+          {table.relations.length > 0 && (
+            <SemanticRelationsSection relations={table.relations} />
+          )}
 
-        {computedColumns.length > 0 && (
-          <SemanticComputedColumnsTable computedColumns={computedColumns} />
-        )}
-
-        {table.relations.length > 0 && (
-          <SemanticRelationsTable relations={table.relations} />
-        )}
+          {table.context && <SemanticContextSection context={table.context} />}
+        </Stack>
       </Card>
     </div>
   );
 }
 
-type SemanticColumnsTableProps = {
+type SemanticColumnsSectionProps = {
   columns: SemanticColumn[];
-};
-
-function SemanticColumnsTable({ columns }: SemanticColumnsTableProps) {
-  return (
-    <Box>
-      <Badge color="gray" size="sm" variant="light">
-        Columns
-      </Badge>
-      <Table verticalSpacing={6} mt="sm">
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Name</Table.Th>
-            <Table.Th>Type</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {columns.map((column) => (
-            <Table.Tr key={column.name}>
-              <Table.Td>
-                <Text fw={500}>{column.name}</Text>
-              </Table.Td>
-              <Table.Td>
-                <Text fz="sm">{column.type}</Text>
-              </Table.Td>
-            </Table.Tr>
-          ))}
-        </Table.Tbody>
-      </Table>
-    </Box>
-  );
-}
-
-type SemanticComputedColumnsTableProps = {
   computedColumns: SemanticComputedColumn[];
 };
 
-function SemanticComputedColumnsTable({
+type SemanticColumnRow =
+  | { kind: "base"; column: SemanticColumn }
+  | { kind: "computed"; column: SemanticComputedColumn };
+
+function SemanticColumnsSection({
+  columns,
   computedColumns,
-}: SemanticComputedColumnsTableProps) {
+}: SemanticColumnsSectionProps) {
+  const rows: SemanticColumnRow[] = [
+    ...columns.map((column) => ({ kind: "base", column })),
+    ...computedColumns.map((column) => ({ kind: "computed", column })),
+  ];
+
   return (
-    <Box mt="lg">
-      <Badge color="teal" size="sm" variant="light">
-        Computed columns
-      </Badge>
-      <Table verticalSpacing={6} mt="sm">
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Name</Table.Th>
-            <Table.Th>Type</Table.Th>
-            <Table.Th>Expression</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {computedColumns.map((column) => (
-            <Table.Tr key={column.name}>
-              <Table.Td>
-                <Group gap={6} wrap="nowrap">
-                  <Text fw={500}>{column.name}</Text>
-                  <Badge size="xs" color="teal" variant="light">
-                    Computed
-                  </Badge>
-                </Group>
-              </Table.Td>
-              <Table.Td>
-                <Group gap={6} wrap="nowrap">
-                  <Text fz="sm">{column.type}</Text>
-                  {column.unit && (
-                    <Badge size="xs" variant="light">
-                      {column.unit}
-                    </Badge>
-                  )}
-                </Group>
-              </Table.Td>
-              <Table.Td>
-                <Code fz="xs">{column.expression}</Code>
-              </Table.Td>
+    <Box>
+      <SemanticSectionHeader
+        color="teal"
+        label="Columns"
+        countLabel={`Active Columns (${rows.length})`}
+      />
+      <Box style={getSectionSurfaceStyle()}>
+        <Table horizontalSpacing="lg" verticalSpacing="md" highlightOnHover>
+          <Table.Thead
+            style={{
+              backgroundColor: "var(--mantine-color-gray-0)",
+            }}
+          >
+            <Table.Tr>
+              <Table.Th style={{ width: rem(70) }}>On</Table.Th>
+              <Table.Th>Name</Table.Th>
+              <Table.Th style={{ width: rem(180) }}>Type</Table.Th>
+              <Table.Th style={{ width: rem(120), textAlign: "right" }}>
+                Actions
+              </Table.Th>
             </Table.Tr>
-          ))}
-        </Table.Tbody>
-      </Table>
+          </Table.Thead>
+          <Table.Tbody>
+            {rows.map((row) => {
+              const key =
+                row.kind === "computed"
+                  ? `computed-${row.column.name}`
+                  : row.column.name;
+
+              return (
+                <Table.Tr key={key}>
+                  <Table.Td>
+                    <Checkbox
+                      checked
+                      readOnly
+                      aria-label={`Active column ${row.column.name}`}
+                    />
+                  </Table.Td>
+                  <Table.Td>
+                    <Group gap="xs" align="flex-start">
+                      <Text fw={500}>{row.column.name}</Text>
+                      {row.kind === "computed" && (
+                        <Badge size="xs" color="teal" variant="light">
+                          Computed
+                        </Badge>
+                      )}
+                      <ActionIcon
+                        variant="subtle"
+                        color="gray"
+                        size="sm"
+                        radius="md"
+                        aria-label={`Rename column ${row.column.name}`}
+                      >
+                        <IconPencil size={14} />
+                      </ActionIcon>
+                    </Group>
+                    {row.kind === "computed" && (
+                      <Text fz="xs" c="dimmed" mt={4}>
+                        = <Code fz="xs">{row.column.expression}</Code>
+                      </Text>
+                    )}
+                  </Table.Td>
+                  <Table.Td>
+                    <Group gap="xs">
+                      <Text fz="sm">{row.column.type}</Text>
+                      {"unit" in row.column && row.column.unit && (
+                        <Badge size="xs" variant="light">
+                          {row.column.unit}
+                        </Badge>
+                      )}
+                    </Group>
+                  </Table.Td>
+                  <Table.Td>
+                    <Group gap="xs" justify="flex-end">
+                      <Tooltip label="Add column note" withArrow>
+                        <Box component="span">
+                          <ActionIcon
+                            variant="light"
+                            color="blue"
+                            radius="xl"
+                            size="sm"
+                            disabled
+                            aria-label={`Add column note for ${row.column.name}`}
+                            style={{ cursor: "not-allowed", opacity: 0.6 }}
+                          >
+                            <IconNote size={14} />
+                          </ActionIcon>
+                        </Box>
+                      </Tooltip>
+                      {row.kind === "computed" && (
+                        <ActionIcon
+                          variant="subtle"
+                          color="red"
+                          size="sm"
+                          radius="md"
+                          aria-label={`Remove computed column ${row.column.name}`}
+                        >
+                          <IconTrash size={14} />
+                        </ActionIcon>
+                      )}
+                    </Group>
+                  </Table.Td>
+                </Table.Tr>
+              );
+            })}
+          </Table.Tbody>
+        </Table>
+      </Box>
     </Box>
   );
 }
 
-type SemanticRelationsTableProps = {
+type SemanticRelationsSectionProps = {
   relations: SemanticRelation[];
 };
 
-function SemanticRelationsTable({
+function SemanticRelationsSection({
   relations,
-}: SemanticRelationsTableProps) {
-  if (relations.length === 0) {
-    return null;
-  }
-
-  const formatMappings = (relation: SemanticRelation) => {
-    if (!relation.sourceColumns || relation.sourceColumns.length === 0) {
-      return "—";
-    }
-
-    return relation.sourceColumns
-      .map((sourceColumn, index) => {
-        const targetColumn = relation.targetColumns?.[index];
-        if (targetColumn) {
-          return `${sourceColumn} → ${targetColumn}`;
-        }
-        if (relation.targetColumns && relation.targetColumns.length > 0) {
-          return `${sourceColumn} → ${relation.targetColumns[0]}`;
-        }
-        return sourceColumn;
-      })
-      .join(", ");
-  };
-
+}: SemanticRelationsSectionProps) {
   return (
-    <Box mt="lg">
-      <Badge color="violet" size="sm" variant="light">
-        Relations
-      </Badge>
-      <Table verticalSpacing={6} mt="sm">
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Relation</Table.Th>
-            <Table.Th>Target table</Table.Th>
-            <Table.Th>Cardinality</Table.Th>
-            <Table.Th>Mappings</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {relations.map((relation) => (
-            <Table.Tr key={`${relation.name}-${relation.targetTable}`}>
-              <Table.Td>
-                <Text fw={500}>{relation.name}</Text>
-              </Table.Td>
-              <Table.Td>
-                <Text>{relation.targetTable}</Text>
-              </Table.Td>
-              <Table.Td>
-                <Text fz="sm">
-                  {relation.isList ? "One-to-many" : "One-to-one"}
-                </Text>
-              </Table.Td>
-              <Table.Td>
-                <Text fz="xs" c="dimmed">
-                  {formatMappings(relation)}
-                </Text>
-              </Table.Td>
+    <Box>
+      <SemanticSectionHeader
+        color="grape"
+        label="Relations"
+        countLabel={`Active Relations (${relations.length})`}
+        action={
+          <Button
+            size="xs"
+            variant="default"
+            radius="md"
+            disabled
+            style={{ opacity: 0.6, cursor: "not-allowed" }}
+          >
+            + Add Manual Relation
+          </Button>
+        }
+      />
+      <Box style={getSectionSurfaceStyle()}>
+        <Table horizontalSpacing="lg" verticalSpacing="md" highlightOnHover>
+          <Table.Thead
+            style={{
+              backgroundColor: "var(--mantine-color-gray-0)",
+            }}
+          >
+            <Table.Tr>
+              <Table.Th style={{ width: rem(70) }}>On</Table.Th>
+              <Table.Th>Name</Table.Th>
+              <Table.Th style={{ width: rem(220) }}>Target Table</Table.Th>
+              <Table.Th style={{ width: rem(120), textAlign: "right" }}>
+                Actions
+              </Table.Th>
             </Table.Tr>
-          ))}
-        </Table.Tbody>
-      </Table>
+          </Table.Thead>
+          <Table.Tbody>
+            {relations.map((relation) => (
+              <Table.Tr key={`${relation.name}-${relation.targetTable}`}>
+                <Table.Td>
+                  <Checkbox
+                    checked
+                    readOnly
+                    aria-label={`Active relation ${relation.name}`}
+                  />
+                </Table.Td>
+                <Table.Td>
+                  <Text fw={500}>{relation.name}</Text>
+                  <Text fz="xs" c="dimmed">
+                    {formatRelationMappings(relation)}
+                  </Text>
+                </Table.Td>
+                <Table.Td>
+                  <Text>{relation.targetTable}</Text>
+                  <Text fz="xs" c="dimmed">
+                    {relation.isList ? "One-to-many" : "One-to-one"}
+                  </Text>
+                </Table.Td>
+                <Table.Td style={{ textAlign: "right" }}>
+                  <Text c="dimmed">—</Text>
+                </Table.Td>
+              </Table.Tr>
+            ))}
+          </Table.Tbody>
+        </Table>
+      </Box>
     </Box>
   );
+}
+
+type SemanticContextSectionProps = {
+  context: string;
+};
+
+function SemanticContextSection({ context }: SemanticContextSectionProps) {
+  return (
+    <Box>
+      <SemanticSectionHeader color="gray" label="Context" />
+      <Box
+        style={getSectionSurfaceStyle({
+          padded: true,
+          backgroundColor: "var(--mantine-color-gray-0)",
+        })}
+      >
+        <Group gap="xs" align="flex-start">
+          <IconInfoCircle size={16} />
+          <Text fz="sm">{context}</Text>
+        </Group>
+      </Box>
+    </Box>
+  );
+}
+
+type SemanticSectionHeaderProps = {
+  label: string;
+  color: string;
+  countLabel?: string;
+  action?: ReactNode;
+};
+
+function SemanticSectionHeader({
+  label,
+  color,
+  countLabel,
+  action,
+}: SemanticSectionHeaderProps) {
+  const showMeta = Boolean(countLabel ?? action);
+
+  return (
+    <Group justify="space-between" mb="xs" align="center">
+      <Badge color={color} size="sm" radius="sm">
+        {label.toUpperCase()}
+      </Badge>
+      {showMeta && (
+        <Group gap="xs">
+          {countLabel && (
+            <Text fz="xs" c="dimmed">
+              {countLabel}
+            </Text>
+          )}
+          {action}
+        </Group>
+      )}
+    </Group>
+  );
+}
+
+function formatRelationMappings(relation: SemanticRelation) {
+  if (!relation.sourceColumns || relation.sourceColumns.length === 0) {
+    return "—";
+  }
+
+  return relation.sourceColumns
+    .map((sourceColumn, index) => {
+      const targetColumn = relation.targetColumns?.[index];
+      if (targetColumn) {
+        return `${sourceColumn} → ${targetColumn}`;
+      }
+      if (relation.targetColumns && relation.targetColumns.length > 0) {
+        return `${sourceColumn} → ${relation.targetColumns[0]}`;
+      }
+      return sourceColumn;
+    })
+    .join(", ");
 }
 
 type DatabaseSelectorProps = {
@@ -391,10 +535,7 @@ type DatabaseSelectorProps = {
   onSelect: (tableId: string) => void;
 };
 
-function DatabaseSelector({
-  activeTableId,
-  onSelect,
-}: DatabaseSelectorProps) {
+function DatabaseSelector({ activeTableId, onSelect }: DatabaseSelectorProps) {
   const fallbackId = DEFAULT_TABLE_ID;
   const value =
     activeTableId && SEMANTIC_TABLE_MAP[activeTableId]
@@ -442,12 +583,10 @@ function DatabaseViewer({ activeTableId }: DatabaseViewerProps) {
       ? SEMANTIC_TABLE_MAP[selectedTableId]
       : null;
 
-  const hasViewerConfig = Boolean(
-    selectedSemanticTable?.viewerColumns?.length,
-  );
+  const hasViewerConfig = Boolean(selectedSemanticTable?.viewerColumns?.length);
 
   const [page, setPage] = useState(1);
-  const pageSize = 25;
+  const pageSize = 5;
   const [queryState, setQueryState] = useState<{
     status: "idle" | "loading" | "success" | "error";
     rows: Record<string, unknown>[];
@@ -573,8 +712,7 @@ function DatabaseViewer({ activeTableId }: DatabaseViewerProps) {
   const rows = queryState.rows;
   const isLoading = queryState.status === "loading";
   const isError = queryState.status === "error";
-  const showEmptyState =
-    queryState.status === "success" && rows.length === 0;
+  const showEmptyState = queryState.status === "success" && rows.length === 0;
 
   return (
     <Box mt="md">
@@ -593,7 +731,13 @@ function DatabaseViewer({ activeTableId }: DatabaseViewerProps) {
           <Text fz="sm">No rows available yet.</Text>
         </Card>
       ) : (
-        <Box mt="md" style={{ width: `${DATABASE_VIEWER_TABLE_WIDTH}px`, maxWidth: "100%" }}>
+        <Box
+          mt="md"
+          style={{
+            width: `${DATABASE_VIEWER_TABLE_WIDTH}px`,
+            maxWidth: "100%",
+          }}
+        >
           <ScrollArea h={rem(280)} offsetScrollbars style={{ width: "100%" }}>
             <Table
               verticalSpacing={4}
@@ -637,8 +781,8 @@ function DatabaseViewer({ activeTableId }: DatabaseViewerProps) {
                     })}
                   </Table.Tr>
                 ))}
-            </Table.Tbody>
-          </Table>
+              </Table.Tbody>
+            </Table>
           </ScrollArea>
         </Box>
       )}
