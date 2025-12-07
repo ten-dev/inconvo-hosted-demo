@@ -313,15 +313,21 @@ function SemanticColumnsSection({
                           Computed
                         </Badge>
                       )}
-                      <ActionIcon
-                        variant="subtle"
-                        color="gray"
-                        size="sm"
-                        radius="md"
-                        aria-label={`Rename column ${row.column.name}`}
-                      >
-                        <IconPencil size={14} />
-                      </ActionIcon>
+                      <Tooltip label="Rename column" withArrow>
+                        <Box component="span">
+                          <ActionIcon
+                            variant="subtle"
+                            color="gray"
+                            size="sm"
+                            radius="md"
+                            disabled
+                            aria-label={`Rename column ${row.column.name}`}
+                            style={{ cursor: "not-allowed", opacity: 0.6 }}
+                          >
+                            <IconPencil size={14} />
+                          </ActionIcon>
+                        </Box>
+                      </Tooltip>
                     </Group>
                     {row.kind === "computed" && (
                       <Text fz="xs" c="dimmed" mt={4}>
