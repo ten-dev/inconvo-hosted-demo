@@ -49,7 +49,7 @@ import {
   type SemanticViewerColumn,
 } from "~/data/database/semanticSchema";
 
-const DATABASE_VIEWER_TABLE_WIDTH = 640;
+const DATABASE_VIEWER_TABLE_WIDTH = 900;
 
 const DEFAULT_TABLE_ID = SEMANTIC_TABLES[0]?.id ?? null;
 
