@@ -196,7 +196,7 @@ export default function HomePage() {
                   marginTop: 0,
                 }}
               >
-                <Title order={4}>Example Data</Title>
+                <Title order={4} mb="xs">Example Data</Title>
                 <DatabaseViewer activeTableId={focusedTableId} />
               </Card>
             </Flex>
@@ -739,24 +739,23 @@ function DatabaseViewer({ activeTableId }: DatabaseViewerProps) {
   const showEmptyState = queryState.status === "success" && rows.length === 0;
 
   return (
-    <Box mt="md">
+    <Box>
       {isLoading ? (
-        <Card withBorder radius="md" mt="md">
+        <Card withBorder radius="md">
           <Text fz="sm">Loading rows…</Text>
         </Card>
       ) : isError ? (
-        <Card withBorder radius="md" mt="md">
+        <Card withBorder radius="md">
           <Text fz="sm" c="red">
             {queryState.error ?? "Unable to fetch data."}
           </Text>
         </Card>
       ) : showEmptyState ? (
-        <Card withBorder radius="md" mt="md">
+        <Card withBorder radius="md">
           <Text fz="sm">No rows available yet.</Text>
         </Card>
       ) : (
         <Box
-          mt="md"
           style={{
             width: `${DATABASE_VIEWER_TABLE_WIDTH}px`,
             maxWidth: "100%",
@@ -808,24 +807,23 @@ function DatabaseViewer({ activeTableId }: DatabaseViewerProps) {
               </Table.Tbody>
             </Table>
           </ScrollArea>
+          <Group justify="space-between" align="center" mt="xs">
+            <Text fz="xs" c="dimmed">
+              {queryState.totalCount > 0
+                ? `Showing ${rows.length} of ${queryState.totalCount} rows`
+                : `Showing ${rows.length} rows`}
+            </Text>
+            {queryState.totalPages > 1 && (
+              <Pagination
+                size="sm"
+                value={page}
+                total={queryState.totalPages}
+                onChange={setPage}
+              />
+            )}
+          </Group>
         </Box>
       )}
-
-      <Group justify="space-between" align="center" mt="md">
-        <Text fz="xs" c="dimmed">
-          {queryState.totalCount > 0
-            ? `Showing ${rows.length} of ${queryState.totalCount} rows`
-            : `Showing ${rows.length} rows`}
-        </Text>
-        {queryState.totalPages > 1 && (
-          <Pagination
-            size="sm"
-            value={page}
-            total={queryState.totalPages}
-            onChange={setPage}
-          />
-        )}
-      </Group>
     </Box>
   );
 }
