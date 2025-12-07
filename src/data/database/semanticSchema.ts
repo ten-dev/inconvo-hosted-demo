@@ -1,6 +1,14 @@
+import type { DatabaseTableName } from "./tables";
+
 export type SemanticColumn = {
   name: string;
   type: string;
+};
+
+export type SemanticViewerColumn = {
+  field: string;
+  label?: string;
+  unit?: string;
 };
 
 export type SemanticRelation = {
@@ -20,12 +28,13 @@ export type SemanticComputedColumn = {
 
 export type SemanticTable = {
   id: string;
-  name: string;
+  name: DatabaseTableName;
   description?: string;
   columns: SemanticColumn[];
   relations: SemanticRelation[];
   computedColumns?: SemanticComputedColumn[];
   context?: string;
+  viewerColumns?: SemanticViewerColumn[];
 };
 
 export const SEMANTIC_TABLES: SemanticTable[] = [
@@ -44,6 +53,11 @@ export const SEMANTIC_TABLES: SemanticTable[] = [
       { name: "orders", isList: true, targetTable: "orders" },
       { name: "reviews", isList: true, targetTable: "reviews" },
       { name: "users", isList: true, targetTable: "users" },
+    ],
+    viewerColumns: [
+      { field: "id" },
+      { field: "name" },
+      { field: "created_at" },
     ],
   },
   {
@@ -72,6 +86,15 @@ export const SEMANTIC_TABLES: SemanticTable[] = [
       },
       { name: "orders", isList: true, targetTable: "orders" },
       { name: "reviews", isList: true, targetTable: "reviews" },
+    ],
+    viewerColumns: [
+      { field: "id" },
+      { field: "organisation_id" },
+      { field: "title" },
+      { field: "category" },
+      { field: "price", unit: "USD" },
+      { field: "stock_level" },
+      { field: "created_at" },
     ],
   },
   {
@@ -120,6 +143,17 @@ export const SEMANTIC_TABLES: SemanticTable[] = [
         targetColumns: ["id"],
       },
     ],
+    viewerColumns: [
+      { field: "id", label: "order_id" },
+      { field: "organisation_id" },
+      { field: "user_id" },
+      { field: "product_id" },
+      { field: "subtotal", unit: "USD" },
+      { field: "tax", unit: "USD" },
+      { field: "discount", unit: "USD" },
+      { field: "quantity" },
+      { field: "created_at" },
+    ],
   },
   {
     id: "tbl_reviews",
@@ -157,6 +191,15 @@ export const SEMANTIC_TABLES: SemanticTable[] = [
         targetColumns: ["id"],
       },
     ],
+    viewerColumns: [
+      { field: "id" },
+      { field: "organisation_id" },
+      { field: "product_id" },
+      { field: "user_id" },
+      { field: "rating" },
+      { field: "comment" },
+      { field: "created_at" },
+    ],
   },
   {
     id: "tbl_users",
@@ -189,6 +232,15 @@ export const SEMANTIC_TABLES: SemanticTable[] = [
         sourceColumns: ["organisation_id"],
         targetColumns: ["id"],
       },
+    ],
+    viewerColumns: [
+      { field: "id", label: "customer_id" },
+      { field: "organisation_id" },
+      { field: "name" },
+      { field: "email" },
+      { field: "city" },
+      { field: "created_at" },
+      { field: "last_order_at" },
     ],
   },
 ];

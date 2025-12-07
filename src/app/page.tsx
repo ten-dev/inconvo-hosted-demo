@@ -24,7 +24,6 @@ import {
 import { IconInfoCircle } from "@tabler/icons-react";
 
 import { Assistant } from "./assistant";
-import type { DatabaseTableName } from "~/data/database/tables";
 import {
   SEMANTIC_TABLES,
   SEMANTIC_TABLE_MAP,
@@ -32,97 +31,12 @@ import {
   type SemanticColumn,
   type SemanticComputedColumn,
   type SemanticRelation,
+  type SemanticViewerColumn,
 } from "~/data/database/semanticSchema";
-
-type DatabaseViewerColumn = {
-  field: string;
-  label?: string;
-  unit?: string;
-};
-
-type DatabaseViewerDefinition = {
-  id: string;
-  tableName: DatabaseTableName;
-  columns: DatabaseViewerColumn[];
-};
-
-const DATABASE_VIEWER_TABLES: DatabaseViewerDefinition[] = [
-  {
-    id: "tbl_organisations",
-    tableName: "organisations",
-    columns: [
-      { field: "id" },
-      { field: "name" },
-      { field: "created_at" },
-    ],
-  },
-  {
-    id: "tbl_users",
-    tableName: "users",
-    columns: [
-      { field: "id", label: "customer_id" },
-      { field: "organisation_id" },
-      { field: "name" },
-      { field: "email" },
-      { field: "city" },
-      { field: "created_at" },
-      { field: "last_order_at" },
-    ],
-  },
-  {
-    id: "tbl_products",
-    tableName: "products",
-    columns: [
-      { field: "id" },
-      { field: "organisation_id" },
-      { field: "title" },
-      { field: "category" },
-      { field: "price", unit: "USD" },
-      { field: "stock_level" },
-      { field: "created_at" },
-    ],
-  },
-  {
-    id: "tbl_orders",
-    tableName: "orders",
-    columns: [
-      { field: "id", label: "order_id" },
-      { field: "organisation_id" },
-      { field: "user_id" },
-      { field: "product_id" },
-      { field: "subtotal", unit: "USD" },
-      { field: "tax", unit: "USD" },
-      { field: "discount", unit: "USD" },
-      { field: "quantity" },
-      { field: "created_at" },
-    ],
-  },
-  {
-    id: "tbl_reviews",
-    tableName: "reviews",
-    columns: [
-      { field: "id" },
-      { field: "organisation_id" },
-      { field: "product_id" },
-      { field: "user_id" },
-      { field: "rating" },
-      { field: "comment" },
-      { field: "created_at" },
-    ],
-  },
-];
-
-const DATABASE_VIEWER_MAP = DATABASE_VIEWER_TABLES.reduce<
-  Record<string, DatabaseViewerDefinition>
->((acc, table) => {
-  acc[table.id] = table;
-  return acc;
-}, {});
 
 const DATABASE_VIEWER_TABLE_WIDTH = 640;
 
-const DEFAULT_TABLE_ID =
-  DATABASE_VIEWER_TABLES[0]?.id ?? SEMANTIC_TABLES[0]?.id ?? null;
+const DEFAULT_TABLE_ID = SEMANTIC_TABLES[0]?.id ?? null;
 
 export default function HomePage() {
   const [topHeight, setTopHeight] = useState(50); // percentage
@@ -297,21 +211,19 @@ function SemanticTableView({ table }: SemanticTableViewProps) {
           <SemanticRelationsTable relations={table.relations} />
         )}
 
-        {table.context && (
-          <Box mt="lg">
-            <Group gap="xs" align="flex-start">
-              <IconInfoCircle size={16} />
-              <Box>
-                <Text fw={600} fz="sm">
-                  Table context
-                </Text>
-                <Text fz="sm" mt={4}>
-                  {table.context}
-                </Text>
-              </Box>
-            </Group>
-          </Box>
-        )}
+        <Box mt="lg">
+          <Group gap="xs" align="flex-start">
+            <IconInfoCircle size={16} />
+            <Box>
+              <Text fw={600} fz="sm">
+                Table context
+              </Text>
+              <Text fz="sm" mt={4}>
+                {table.context ?? "No custom context configured for this table."}
+              </Text>
+            </Box>
+          </Group>
+        </Box>
       </Card>
     </div>
   );
@@ -483,12 +395,9 @@ function DatabaseSelector({
   activeTableId,
   onSelect,
 }: DatabaseSelectorProps) {
-  const availableTables = DATABASE_VIEWER_TABLES.filter(
-    (table) => SEMANTIC_TABLE_MAP[table.id],
-  );
-  const fallbackId = availableTables[0]?.id ?? SEMANTIC_TABLES[0]?.id ?? null;
+  const fallbackId = DEFAULT_TABLE_ID;
   const value =
-    activeTableId && DATABASE_VIEWER_MAP[activeTableId]
+    activeTableId && SEMANTIC_TABLE_MAP[activeTableId]
       ? activeTableId
       : fallbackId;
 
@@ -496,11 +405,11 @@ function DatabaseSelector({
     return null;
   }
 
-  const segments = availableTables.map((table) => ({
+  const segments = SEMANTIC_TABLES.map((table) => ({
     value: table.id,
     label: (
       <Text fw={600} fz="xs" tt="lowercase">
-        {SEMANTIC_TABLE_MAP[table.id]?.name ?? table.id}
+        {table.name}
       </Text>
     ),
   }));
@@ -521,14 +430,21 @@ type DatabaseViewerProps = {
   activeTableId: string | null;
 };
 
-function DatabaseViewer({
-  activeTableId,
-}: DatabaseViewerProps) {
-  const fallbackTableId = DATABASE_VIEWER_TABLES[0]?.id ?? null;
+function DatabaseViewer({ activeTableId }: DatabaseViewerProps) {
+  const fallbackTableId = DEFAULT_TABLE_ID;
   const selectedTableId =
-    activeTableId && DATABASE_VIEWER_MAP[activeTableId]
+    activeTableId && SEMANTIC_TABLE_MAP[activeTableId]
       ? activeTableId
       : fallbackTableId;
+
+  const selectedSemanticTable =
+    selectedTableId && SEMANTIC_TABLE_MAP[selectedTableId]
+      ? SEMANTIC_TABLE_MAP[selectedTableId]
+      : null;
+
+  const hasViewerConfig = Boolean(
+    selectedSemanticTable?.viewerColumns?.length,
+  );
 
   const [page, setPage] = useState(1);
   const pageSize = 25;
@@ -550,12 +466,8 @@ function DatabaseViewer({
     setPage(1);
   }, [selectedTableId]);
 
-  const selectedSource = selectedTableId
-    ? DATABASE_VIEWER_MAP[selectedTableId]
-    : undefined;
-
   useEffect(() => {
-    if (!selectedSource || !selectedTableId) {
+    if (!selectedSemanticTable || !hasViewerConfig) {
       setQueryState((prev) => ({
         ...prev,
         status: "idle",
@@ -575,7 +487,7 @@ function DatabaseViewer({
     }));
 
     const params = new URLSearchParams({
-      table: selectedSource.tableName,
+      table: selectedSemanticTable.name,
       page: String(page),
       pageSize: String(pageSize),
     });
@@ -622,7 +534,13 @@ function DatabaseViewer({
       });
 
     return () => controller.abort();
-  }, [selectedSource, selectedTableId, page, pageSize]);
+  }, [
+    selectedSemanticTable?.id,
+    selectedSemanticTable?.name,
+    hasViewerConfig,
+    page,
+    pageSize,
+  ]);
 
   useEffect(() => {
     setPage((current) => {
@@ -631,7 +549,7 @@ function DatabaseViewer({
     });
   }, [queryState.totalPages]);
 
-  if (!selectedTableId || !selectedSource) {
+  if (!selectedSemanticTable) {
     return (
       <Card withBorder radius="md" mt="md" p="md">
         <Text fz="sm" c="dimmed">
@@ -641,7 +559,17 @@ function DatabaseViewer({
     );
   }
 
-  const columnsToDisplay = selectedSource.columns;
+  if (!hasViewerConfig) {
+    return (
+      <Card withBorder radius="md" mt="md" p="md">
+        <Text fz="sm" c="dimmed">
+          This table is not configured for the live data preview yet.
+        </Text>
+      </Card>
+    );
+  }
+
+  const columnsToDisplay = selectedSemanticTable.viewerColumns ?? [];
   const rows = queryState.rows;
   const isLoading = queryState.status === "loading";
   const isError = queryState.status === "error";
@@ -667,48 +595,48 @@ function DatabaseViewer({
       ) : (
         <Box mt="md" style={{ width: `${DATABASE_VIEWER_TABLE_WIDTH}px`, maxWidth: "100%" }}>
           <ScrollArea h={rem(280)} offsetScrollbars style={{ width: "100%" }}>
-          <Table
-            verticalSpacing={4}
-            horizontalSpacing={6}
-            withTableBorder
-            withColumnBorders
-            style={{
-              fontSize: "0.85rem",
-              fontFamily: "monospace",
-              width: "100%",
-            }}
-          >
-            <Table.Thead>
-              <Table.Tr>
-                {columnsToDisplay.map((column) => (
-                  <Table.Th
-                    key={column.field}
-                    style={{
-                      textTransform: "none",
-                      backgroundColor: "var(--mantine-color-gray-1)",
-                      fontWeight: 600,
-                    }}
-                  >
-                    {column.label ?? column.field}
-                  </Table.Th>
-                ))}
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {rows.map((row, rowIndex) => (
-                <Table.Tr key={`${selectedTableId}-${rowIndex}`}>
-                  {columnsToDisplay.map((column) => {
-                    const rawValue = row[column.field];
-                    return (
-                      <Table.Td key={`${rowIndex}-${column.field}`}>
-                        <Text fz="xs" ff="monospace">
-                          {formatCellValue(rawValue, column)}
-                        </Text>
-                      </Table.Td>
-                    );
-                  })}
+            <Table
+              verticalSpacing={4}
+              horizontalSpacing={6}
+              withTableBorder
+              withColumnBorders
+              style={{
+                fontSize: "0.85rem",
+                fontFamily: "monospace",
+                width: "100%",
+              }}
+            >
+              <Table.Thead>
+                <Table.Tr>
+                  {columnsToDisplay.map((column) => (
+                    <Table.Th
+                      key={column.field}
+                      style={{
+                        textTransform: "none",
+                        backgroundColor: "var(--mantine-color-gray-1)",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {column.label ?? column.field}
+                    </Table.Th>
+                  ))}
                 </Table.Tr>
-              ))}
+              </Table.Thead>
+              <Table.Tbody>
+                {rows.map((row, rowIndex) => (
+                  <Table.Tr key={`${selectedSemanticTable.id}-${rowIndex}`}>
+                    {columnsToDisplay.map((column) => {
+                      const rawValue = row[column.field];
+                      return (
+                        <Table.Td key={`${rowIndex}-${column.field}`}>
+                          <Text fz="xs" ff="monospace">
+                            {formatCellValue(rawValue, column)}
+                          </Text>
+                        </Table.Td>
+                      );
+                    })}
+                  </Table.Tr>
+                ))}
             </Table.Tbody>
           </Table>
           </ScrollArea>
@@ -736,7 +664,7 @@ function DatabaseViewer({
 
 function formatCellValue(
   value: unknown,
-  column?: DatabaseViewerColumn,
+  column?: SemanticViewerColumn,
 ): string {
   if (value === null || value === undefined) {
     return "—";
