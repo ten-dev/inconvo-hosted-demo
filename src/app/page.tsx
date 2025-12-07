@@ -8,7 +8,6 @@ import {
   Badge,
   Box,
   Card,
-  Container,
   Flex,
   Group,
   MantineProvider,
@@ -86,7 +85,18 @@ export default function HomePage() {
     <Assistant>
       <MantineProvider defaultColorScheme="light">
         <main className="bg-background text-foreground flex min-h-screen flex-col">
-          <Container size="xl" py="lg" style={{ height: "calc(100vh - 2rem)" }}>
+          <Box
+            component="section"
+            style={{
+              height: "calc(100vh - 2rem)",
+              width: "100%",
+              maxWidth: "100%",
+              paddingTop: rem(24),
+              paddingBottom: rem(24),
+              paddingLeft: rem(32),
+              paddingRight: rem(32),
+            }}
+          >
             <Box mb="md">
               <DatabaseSelector
                 activeTableId={focusedTableId}
@@ -159,7 +169,7 @@ export default function HomePage() {
                 />
               </Card>
             </Flex>
-          </Container>
+          </Box>
         </main>
       </MantineProvider>
     </Assistant>
@@ -185,21 +195,25 @@ function SemanticTableView({ table }: SemanticTableViewProps) {
   }
 
   const computedColumns = table.computedColumns ?? [];
+  const hasContext = Boolean(table.context);
 
   return (
     <div className="flex flex-col gap-4">
       <Title order={3}>Semantic Model</Title>
       <Card withBorder radius="md" p="md">
-        <Box mb="md">
-          <Text fw={600} tt="lowercase">
-            {table.name}
-          </Text>
-          {table.description && (
-            <Text fz="sm" c="dimmed">
-              {table.description}
-            </Text>
-          )}
-        </Box>
+        {hasContext && (
+          <Box mb="md">
+            <Badge color="grape" size="sm" variant="light">
+              Context
+            </Badge>
+            <Card withBorder shadow="xs" p="md" mt="xs">
+              <Group gap="xs" align="flex-start">
+                <IconInfoCircle size={16} />
+                <Text fz="sm">{table.context}</Text>
+              </Group>
+            </Card>
+          </Box>
+        )}
 
         <SemanticColumnsTable columns={table.columns} />
 
@@ -210,20 +224,6 @@ function SemanticTableView({ table }: SemanticTableViewProps) {
         {table.relations.length > 0 && (
           <SemanticRelationsTable relations={table.relations} />
         )}
-
-        <Box mt="lg">
-          <Group gap="xs" align="flex-start">
-            <IconInfoCircle size={16} />
-            <Box>
-              <Text fw={600} fz="sm">
-                Table context
-              </Text>
-              <Text fz="sm" mt={4}>
-                {table.context ?? "No custom context configured for this table."}
-              </Text>
-            </Box>
-          </Group>
-        </Box>
       </Card>
     </div>
   );
