@@ -305,6 +305,7 @@ function SemanticColumnsSection({
                 <Table.Tr key={key}>
                   <Table.Td>
                     <Checkbox
+                      size="xs"
                       checked
                       readOnly
                       aria-label={`Active column ${row.column.name}`}
@@ -325,13 +326,13 @@ function SemanticColumnsSection({
                           <ActionIcon
                             variant="subtle"
                             color="gray"
-                            size="sm"
+                            size="xs"
                             radius="md"
                             disabled
                             aria-label={`Rename column ${row.column.name}`}
                             style={{ cursor: "not-allowed", opacity: 0.6 }}
                           >
-                            <IconPencil size={14} />
+                            <IconPencil size={12} />
                           </ActionIcon>
                         </Box>
                       </Tooltip>
@@ -360,12 +361,12 @@ function SemanticColumnsSection({
                             variant="light"
                             color="blue"
                             radius="xl"
-                            size="sm"
+                            size="xs"
                             disabled
                             aria-label={`Add column note for ${row.column.name}`}
                             style={{ cursor: "not-allowed", opacity: 0.6 }}
                           >
-                            <IconNote size={14} />
+                            <IconNote size={12} />
                           </ActionIcon>
                         </Box>
                       </Tooltip>
@@ -373,11 +374,11 @@ function SemanticColumnsSection({
                         <ActionIcon
                           variant="subtle"
                           color="red"
-                          size="sm"
+                          size="xs"
                           radius="md"
                           aria-label={`Remove computed column ${row.column.name}`}
                         >
-                          <IconTrash size={14} />
+                          <IconTrash size={12} />
                         </ActionIcon>
                       )}
                     </Group>
@@ -443,6 +444,7 @@ function SemanticRelationsSection({
               <Table.Tr key={`${relation.name}-${relation.targetTable}`}>
                 <Table.Td>
                   <Checkbox
+                    size="xs"
                     checked
                     readOnly
                     aria-label={`Active relation ${relation.name}`}
