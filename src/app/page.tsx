@@ -8,8 +8,6 @@ import {
   Badge,
   Box,
   Card,
-  Checkbox,
-  Collapse,
   Container,
   Flex,
   Group,
@@ -23,792 +21,18 @@ import {
   Code,
   Title,
 } from "@mantine/core";
-import {
-  IconChevronDown,
-  IconChevronUp,
-  IconInfoCircle,
-} from "@tabler/icons-react";
+import { IconInfoCircle } from "@tabler/icons-react";
 
 import { Assistant } from "./assistant";
 import type { DatabaseTableName } from "~/data/database/tables";
-
-const tableAccessLabels = {
-  QUERYABLE: { label: "Queryable", color: "green" },
-  JOINABLE: { label: "Joinable", color: "orange" },
-  OFF: { label: "Off", color: "gray" },
-} as const;
-
-type TableAccess = keyof typeof tableAccessLabels;
-
-type ColumnSchema = {
-  id: string;
-  name: string;
-  rename?: string | null;
-  type: string;
-  unit?: string | null;
-  selected: boolean;
-  notes?: string | null;
-};
-
-type ComputedColumnSchema = {
-  id: string;
-  name: string;
-  expression: string;
-  selected: boolean;
-  type: string;
-  unit?: string | null;
-  notes?: string | null;
-};
-
-type RelationMapping = {
-  id: string;
-  sourceColumnName: string;
-  targetColumnName: string;
-};
-
-type RelationSchema = {
-  id: string;
-  name: string;
-  targetTable: { id: string; name: string; access: TableAccess };
-  selected: boolean;
-  status: "VALID" | "BROKEN";
-  source: "MANUAL" | "SYNCED";
-  isList: boolean;
-  errorTag?: string;
-  columnMappings: RelationMapping[];
-};
-
-type TableCondition = {
-  column: { id: string; name: string };
-  requestContextField: { id: string; key: string };
-};
-
-type TableSchema = {
-  id: string;
-  name: string;
-  description: string;
-  access: TableAccess;
-  columns: ColumnSchema[];
-  computedColumns: ComputedColumnSchema[];
-  outwardRelations: RelationSchema[];
-  condition?: TableCondition;
-  contextPrompt?: string;
-};
-
-type TableProps = {
-  tableIds: { id: string }[];
-  totalTables: number;
-  currentPage: number;
-  searchQuery: string;
-  accessFilters: TableAccess[];
-};
-
-type DatabaseFixture = {
-  summary: TableProps;
-  tables: Record<string, TableSchema>;
-};
-
-const DATABASE_FIXTURE: DatabaseFixture = {
-  summary: {
-    tableIds: [
-      { id: "tbl_organisations" },
-      { id: "tbl_users" },
-      { id: "tbl_products" },
-      { id: "tbl_orders" },
-      { id: "tbl_reviews" },
-    ],
-    totalTables: 5,
-    currentPage: 1,
-    searchQuery: "",
-    accessFilters: ["QUERYABLE", "JOINABLE"],
-  },
-  tables: {
-    tbl_organisations: {
-      id: "tbl_organisations",
-      name: "organisations",
-      description: "Top-level tenants that own data partitions inside the ecommerce warehouse.",
-      access: "QUERYABLE",
-      columns: [
-        {
-          id: "org_1",
-          name: "id",
-          type: "int",
-          selected: true,
-          notes: "Primary key",
-        },
-        {
-          id: "org_2",
-          name: "name",
-          type: "text",
-          selected: true,
-        },
-        {
-          id: "org_3",
-          name: "created_at",
-          type: "timestamp",
-          notes: "UTC",
-          selected: true,
-        },
-      ],
-      computedColumns: [
-        {
-          id: "cc_org_1",
-          name: "active_users_last_30d",
-          expression: "count(distinct users.id) where users.last_order_at > now() - interval '30 days'",
-          selected: true,
-          type: "numeric",
-        },
-      ],
-      outwardRelations: [
-        {
-          id: "rel_org_users",
-          name: "Users",
-          targetTable: {
-            id: "tbl_users",
-            name: "users",
-            access: "QUERYABLE",
-          },
-          selected: true,
-          status: "VALID",
-          source: "SYNCED",
-          isList: true,
-          columnMappings: [
-            {
-              id: "map_org_users",
-              sourceColumnName: "id",
-              targetColumnName: "organisation_id",
-            },
-          ],
-        },
-        {
-          id: "rel_org_products",
-          name: "Products",
-          targetTable: {
-            id: "tbl_products",
-            name: "products",
-            access: "QUERYABLE",
-          },
-          selected: true,
-          status: "VALID",
-          source: "SYNCED",
-          isList: true,
-          columnMappings: [
-            {
-              id: "map_org_products",
-              sourceColumnName: "id",
-              targetColumnName: "organisation_id",
-            },
-          ],
-        },
-        {
-          id: "rel_org_orders",
-          name: "Orders",
-          targetTable: {
-            id: "tbl_orders",
-            name: "orders",
-            access: "QUERYABLE",
-          },
-          selected: true,
-          status: "VALID",
-          source: "SYNCED",
-          isList: true,
-          columnMappings: [
-            {
-              id: "map_org_orders",
-              sourceColumnName: "id",
-              targetColumnName: "organisation_id",
-            },
-          ],
-        },
-        {
-          id: "rel_org_reviews",
-          name: "Reviews",
-          targetTable: {
-            id: "tbl_reviews",
-            name: "reviews",
-            access: "JOINABLE",
-          },
-          selected: true,
-          status: "VALID",
-          source: "SYNCED",
-          isList: true,
-          columnMappings: [
-            {
-              id: "map_org_reviews",
-              sourceColumnName: "id",
-              targetColumnName: "organisation_id",
-            },
-          ],
-        },
-      ],
-      contextPrompt:
-        "Each organisation isolates tenant-specific usage data. Join through organisation_id when working across tables.",
-    },
-    tbl_users: {
-      id: "tbl_users",
-      name: "users",
-      description: "Profiles for shoppers that have interacted with storefronts.",
-      access: "QUERYABLE",
-      columns: [
-        {
-          id: "user_1",
-          name: "id",
-          rename: "customer_id",
-          type: "int",
-          selected: true,
-          notes: "Primary key",
-        },
-        {
-          id: "user_2",
-          name: "organisation_id",
-          type: "int",
-          selected: true,
-        },
-        {
-          id: "user_3",
-          name: "name",
-          type: "text",
-          selected: true,
-        },
-        {
-          id: "user_4",
-          name: "email",
-          type: "text",
-          selected: true,
-        },
-        {
-          id: "user_5",
-          name: "city",
-          type: "text",
-          selected: true,
-        },
-        {
-          id: "user_6",
-          name: "zip",
-          type: "text",
-          selected: false,
-        },
-        {
-          id: "user_7",
-          name: "latitude",
-          type: "numeric",
-          selected: false,
-        },
-        {
-          id: "user_8",
-          name: "longitude",
-          type: "numeric",
-          selected: false,
-        },
-        {
-          id: "user_9",
-          name: "birth_date",
-          type: "date",
-          selected: false,
-        },
-        {
-          id: "user_10",
-          name: "created_at",
-          type: "timestamp",
-          selected: false,
-        },
-        {
-          id: "user_11",
-          name: "last_order_at",
-          type: "timestamp",
-          selected: false,
-        },
-      ],
-      computedColumns: [
-        {
-          id: "cc_user_1",
-          name: "orders_count",
-          expression: "count(orders.id)",
-          selected: true,
-          type: "int",
-        },
-        {
-          id: "cc_user_2",
-          name: "lifetime_value",
-          expression: "sum(orders.subtotal + orders.tax - orders.discount)",
-          selected: false,
-          type: "numeric",
-          unit: "USD",
-        },
-      ],
-      outwardRelations: [
-        {
-          id: "rel_user_org",
-          name: "Organisation",
-          targetTable: {
-            id: "tbl_organisations",
-            name: "organisations",
-            access: "QUERYABLE",
-          },
-          selected: true,
-          status: "VALID",
-          source: "SYNCED",
-          isList: false,
-          columnMappings: [
-            {
-              id: "map_user_org",
-              sourceColumnName: "organisation_id",
-              targetColumnName: "id",
-            },
-          ],
-        },
-        {
-          id: "rel_user_orders",
-          name: "Orders",
-          targetTable: {
-            id: "tbl_orders",
-            name: "orders",
-            access: "QUERYABLE",
-          },
-          selected: true,
-          status: "VALID",
-          source: "SYNCED",
-          isList: true,
-          columnMappings: [
-            {
-              id: "map_user_orders",
-              sourceColumnName: "id",
-              targetColumnName: "user_id",
-            },
-          ],
-        },
-        {
-          id: "rel_user_reviews",
-          name: "Reviews",
-          targetTable: {
-            id: "tbl_reviews",
-            name: "reviews",
-            access: "JOINABLE",
-          },
-          selected: true,
-          status: "VALID",
-          source: "SYNCED",
-          isList: true,
-          columnMappings: [
-            {
-              id: "map_user_reviews",
-              sourceColumnName: "id",
-              targetColumnName: "user_id",
-            },
-          ],
-        },
-      ],
-      contextPrompt:
-        "Use this table for customer segmentation and engagement analytics.",
-    },
-    tbl_products: {
-      id: "tbl_products",
-      name: "products",
-      description:
-        "Catalog entries enriched with merchandising metadata and stock levels.",
-      access: "QUERYABLE",
-      columns: [
-        {
-          id: "prod_1",
-          name: "id",
-          type: "int",
-          selected: true,
-          notes: "Primary key",
-        },
-        {
-          id: "prod_2",
-          name: "organisation_id",
-          type: "int",
-          selected: true,
-        },
-        {
-          id: "prod_3",
-          name: "title",
-          type: "text",
-          selected: true,
-        },
-        {
-          id: "prod_4",
-          name: "category",
-          type: "text",
-          selected: true,
-        },
-        {
-          id: "prod_5",
-          name: "ean",
-          type: "text",
-          selected: false,
-        },
-        {
-          id: "prod_6",
-          name: "price",
-          type: "numeric",
-          unit: "USD",
-          selected: true,
-        },
-        {
-          id: "prod_7",
-          name: "stock_level",
-          type: "int",
-          selected: true,
-        },
-        {
-          id: "prod_8",
-          name: "created_at",
-          type: "timestamp",
-          selected: false,
-        },
-      ],
-      computedColumns: [
-        {
-          id: "cc_prod_1",
-          name: "inventory_value",
-          expression: "price * stock_level",
-          selected: true,
-          type: "numeric",
-          unit: "USD",
-        },
-      ],
-      outwardRelations: [
-        {
-          id: "rel_prod_org",
-          name: "Organisation",
-          targetTable: {
-            id: "tbl_organisations",
-            name: "organisations",
-            access: "QUERYABLE",
-          },
-          selected: true,
-          status: "VALID",
-          source: "SYNCED",
-          isList: false,
-          columnMappings: [
-            {
-              id: "map_prod_org",
-              sourceColumnName: "organisation_id",
-              targetColumnName: "id",
-            },
-          ],
-        },
-        {
-          id: "rel_prod_orders",
-          name: "Orders",
-          targetTable: {
-            id: "tbl_orders",
-            name: "orders",
-            access: "QUERYABLE",
-          },
-          selected: true,
-          status: "VALID",
-          source: "SYNCED",
-          isList: true,
-          columnMappings: [
-            {
-              id: "map_prod_orders",
-              sourceColumnName: "id",
-              targetColumnName: "product_id",
-            },
-          ],
-        },
-        {
-          id: "rel_prod_reviews",
-          name: "Reviews",
-          targetTable: {
-            id: "tbl_reviews",
-            name: "reviews",
-            access: "JOINABLE",
-          },
-          selected: true,
-          status: "VALID",
-          source: "SYNCED",
-          isList: true,
-          columnMappings: [
-            {
-              id: "map_prod_reviews",
-              sourceColumnName: "id",
-              targetColumnName: "product_id",
-            },
-          ],
-        },
-      ],
-      contextPrompt:
-        "Blend catalog data with order lines to understand product performance.",
-    },
-    tbl_orders: {
-      id: "tbl_orders",
-      name: "orders",
-      description: "Transactional headers for store purchases.",
-      access: "QUERYABLE",
-      columns: [
-        {
-          id: "order_1",
-          name: "id",
-          rename: "order_id",
-          type: "int",
-          selected: true,
-          notes: "Primary key",
-        },
-        {
-          id: "order_2",
-          name: "organisation_id",
-          type: "int",
-          selected: true,
-        },
-        {
-          id: "order_3",
-          name: "user_id",
-          type: "int",
-          selected: true,
-        },
-        {
-          id: "order_4",
-          name: "product_id",
-          type: "int",
-          selected: true,
-        },
-        {
-          id: "order_5",
-          name: "subtotal",
-          type: "numeric",
-          unit: "USD",
-          selected: true,
-        },
-        {
-          id: "order_6",
-          name: "tax",
-          type: "numeric",
-          unit: "USD",
-          selected: true,
-        },
-        {
-          id: "order_7",
-          name: "discount",
-          type: "numeric",
-          unit: "USD",
-          selected: true,
-        },
-        {
-          id: "order_8",
-          name: "quantity",
-          type: "int",
-          selected: true,
-        },
-        {
-          id: "order_9",
-          name: "created_at",
-          type: "timestamp",
-          selected: true,
-        },
-      ],
-      computedColumns: [
-        {
-          id: "cc_order_1",
-          name: "order_total",
-          expression: "subtotal + tax - discount",
-          selected: true,
-          type: "numeric",
-          unit: "USD",
-        },
-        {
-          id: "cc_order_2",
-          name: "net_margin",
-          expression: "(subtotal - discount) - cost_basis",
-          selected: false,
-          type: "numeric",
-          notes: "Requires cost feed",
-        },
-      ],
-      outwardRelations: [
-        {
-          id: "rel_order_org",
-          name: "Organisation",
-          targetTable: {
-            id: "tbl_organisations",
-            name: "organisations",
-            access: "QUERYABLE",
-          },
-          selected: true,
-          status: "VALID",
-          source: "SYNCED",
-          isList: false,
-          columnMappings: [
-            {
-              id: "map_order_org",
-              sourceColumnName: "organisation_id",
-              targetColumnName: "id",
-            },
-          ],
-        },
-        {
-          id: "rel_order_user",
-          name: "User",
-          targetTable: {
-            id: "tbl_users",
-            name: "users",
-            access: "QUERYABLE",
-          },
-          selected: true,
-          status: "VALID",
-          source: "SYNCED",
-          isList: false,
-          columnMappings: [
-            {
-              id: "map_order_user",
-              sourceColumnName: "user_id",
-              targetColumnName: "id",
-            },
-          ],
-        },
-        {
-          id: "rel_order_product",
-          name: "Product",
-          targetTable: {
-            id: "tbl_products",
-            name: "products",
-            access: "QUERYABLE",
-          },
-          selected: true,
-          status: "VALID",
-          source: "SYNCED",
-          isList: false,
-          columnMappings: [
-            {
-              id: "map_order_product",
-              sourceColumnName: "product_id",
-              targetColumnName: "id",
-            },
-          ],
-        },
-      ],
-      contextPrompt:
-        "Orders combine financials with user + product relations for downstream metrics.",
-    },
-    tbl_reviews: {
-      id: "tbl_reviews",
-      name: "reviews",
-      description: "Post-purchase review submissions for each order line.",
-      access: "JOINABLE",
-      columns: [
-        {
-          id: "rev_1",
-          name: "id",
-          type: "int",
-          selected: true,
-          notes: "Primary key",
-        },
-        {
-          id: "rev_2",
-          name: "organisation_id",
-          type: "int",
-          selected: true,
-        },
-        {
-          id: "rev_3",
-          name: "product_id",
-          type: "int",
-          selected: true,
-        },
-        {
-          id: "rev_4",
-          name: "user_id",
-          type: "int",
-          selected: true,
-        },
-        {
-          id: "rev_5",
-          name: "rating",
-          type: "smallint",
-          selected: true,
-        },
-        {
-          id: "rev_6",
-          name: "comment",
-          type: "text",
-          selected: false,
-        },
-        {
-          id: "rev_7",
-          name: "created_at",
-          type: "timestamp",
-          selected: true,
-        },
-      ],
-      computedColumns: [
-        {
-          id: "cc_rev_1",
-          name: "sentiment_score",
-          expression: "sentiment_ml(comment)",
-          selected: false,
-          type: "numeric",
-        },
-      ],
-      outwardRelations: [
-        {
-          id: "rel_rev_org",
-          name: "Organisation",
-          targetTable: {
-            id: "tbl_organisations",
-            name: "organisations",
-            access: "QUERYABLE",
-          },
-          selected: true,
-          status: "VALID",
-          source: "SYNCED",
-          isList: false,
-          columnMappings: [
-            {
-              id: "map_rev_org",
-              sourceColumnName: "organisation_id",
-              targetColumnName: "id",
-            },
-          ],
-        },
-        {
-          id: "rel_rev_user",
-          name: "User",
-          targetTable: {
-            id: "tbl_users",
-            name: "users",
-            access: "QUERYABLE",
-          },
-          selected: true,
-          status: "VALID",
-          source: "SYNCED",
-          isList: false,
-          columnMappings: [
-            {
-              id: "map_rev_user",
-              sourceColumnName: "user_id",
-              targetColumnName: "id",
-            },
-          ],
-        },
-        {
-          id: "rel_rev_product",
-          name: "Product",
-          targetTable: {
-            id: "tbl_products",
-            name: "products",
-            access: "QUERYABLE",
-          },
-          selected: true,
-          status: "VALID",
-          source: "SYNCED",
-          isList: false,
-          columnMappings: [
-            {
-              id: "map_rev_product",
-              sourceColumnName: "product_id",
-              targetColumnName: "id",
-            },
-          ],
-        },
-      ],
-      contextPrompt:
-        "Join reviews when you need qualitative feedback in analytics outputs.",
-    },
-  },
-};
+import {
+  SEMANTIC_TABLES,
+  SEMANTIC_TABLE_MAP,
+  type SemanticTable,
+  type SemanticColumn,
+  type SemanticComputedColumn,
+  type SemanticRelation,
+} from "~/data/database/semanticSchema";
 
 type DatabaseViewerColumn = {
   field: string;
@@ -897,12 +121,8 @@ const DATABASE_VIEWER_MAP = DATABASE_VIEWER_TABLES.reduce<
 
 const DATABASE_VIEWER_TABLE_WIDTH = 640;
 
-const ORDERED_TABLES = DATABASE_FIXTURE.summary.tableIds
-  .map(({ id }) => DATABASE_FIXTURE.tables[id])
-  .filter((table): table is TableSchema => Boolean(table));
-
 const DEFAULT_TABLE_ID =
-  DATABASE_VIEWER_TABLES[0]?.id ?? ORDERED_TABLES[0]?.id ?? null;
+  DATABASE_VIEWER_TABLES[0]?.id ?? SEMANTIC_TABLES[0]?.id ?? null;
 
 export default function HomePage() {
   const [topHeight, setTopHeight] = useState(50); // percentage
@@ -912,8 +132,8 @@ export default function HomePage() {
   );
   const containerRef = useRef<HTMLDivElement | null>(null);
   const selectedTable =
-    focusedTableId && DATABASE_FIXTURE.tables[focusedTableId]
-      ? DATABASE_FIXTURE.tables[focusedTableId]
+    focusedTableId && SEMANTIC_TABLE_MAP[focusedTableId]
+      ? SEMANTIC_TABLE_MAP[focusedTableId]
       : null;
 
   const handleMouseMove = (e: MouseEvent) => {
@@ -1033,26 +253,10 @@ export default function HomePage() {
 }
 
 type SemanticTableViewProps = {
-  table: TableSchema | null;
+  table: SemanticTable | null;
 };
 
 function SemanticTableView({ table }: SemanticTableViewProps) {
-  const [activeExpanded, setActiveExpanded] = useState(true);
-  const [inactiveExpanded, setInactiveExpanded] = useState(false);
-  const [relationActiveExpanded, setRelationActiveExpanded] = useState(true);
-  const [relationInactiveExpanded, setRelationInactiveExpanded] =
-    useState(false);
-  const [relationDisabledExpanded, setRelationDisabledExpanded] =
-    useState(false);
-
-  useEffect(() => {
-    setActiveExpanded(true);
-    setInactiveExpanded(false);
-    setRelationActiveExpanded(true);
-    setRelationInactiveExpanded(false);
-    setRelationDisabledExpanded(false);
-  }, [table?.id]);
-
   if (!table) {
     return (
       <div className="flex flex-col gap-4">
@@ -1066,369 +270,207 @@ function SemanticTableView({ table }: SemanticTableViewProps) {
     );
   }
 
-  const activeColumns = table.columns.filter((column) => column.selected);
-  const inactiveColumns = table.columns.filter((column) => !column.selected);
-  const activeComputed = table.computedColumns.filter(
-    (column) => column.selected,
-  );
-  const inactiveComputed = table.computedColumns.filter(
-    (column) => !column.selected,
-  );
-  const activeRelations = table.outwardRelations.filter(
-    (relation) =>
-      relation.selected &&
-      relation.status === "VALID" &&
-      relation.targetTable.access !== "OFF",
-  );
-  const inactiveRelations = table.outwardRelations.filter(
-    (relation) => !relation.selected && relation.targetTable.access !== "OFF",
-  );
-  const disabledRelations = table.outwardRelations.filter(
-    (relation) =>
-      relation.targetTable.access === "OFF" || relation.status === "BROKEN",
-  );
+  const computedColumns = table.computedColumns ?? [];
 
   return (
     <div className="flex flex-col gap-4">
       <Title order={3}>Semantic Model</Title>
       <Card withBorder radius="md" p="md">
-        <Group justify="space-between" align="flex-start" wrap="nowrap">
-          <Box>
-            <Text fw={600} tt="lowercase">
-              {table.name}
+        <Box mb="md">
+          <Text fw={600} tt="lowercase">
+            {table.name}
+          </Text>
+          {table.description && (
+            <Text fz="sm" c="dimmed">
+              {table.description}
             </Text>
-            {table.description && (
-              <Text fz="sm" c="dimmed">
-                {table.description}
-              </Text>
-            )}
-            {table.condition && (
-              <Text fz="xs" c="dimmed" mt={4}>
-                (where {table.condition.column.name} = requestContext.
-                {table.condition.requestContextField.key})
-              </Text>
-            )}
-          </Box>
-          <Badge
-            color={tableAccessLabels[table.access].color}
-            variant="light"
-          >
-            {tableAccessLabels[table.access].label}
-          </Badge>
-        </Group>
-
-        <Box mt="md">
-          <Badge color="teal" size="sm">
-            Columns
-          </Badge>
-          <ColumnsTable
-            title="Active columns"
-            columns={activeColumns}
-            computedColumns={activeComputed}
-            isOpen={activeExpanded}
-            toggle={() => setActiveExpanded((value) => !value)}
-          />
-          <ColumnsTable
-            title="Inactive columns"
-            columns={inactiveColumns}
-            computedColumns={inactiveComputed}
-            isOpen={inactiveExpanded}
-            toggle={() => setInactiveExpanded((value) => !value)}
-            muted
-          />
+          )}
         </Box>
 
-        <Box mt="md">
-          <Badge color="blue" size="sm">
-            Where condition
-          </Badge>
-          <Code block mt="xs">
-            {table.condition ? (
-              <Text fz="sm">
-                Where {table.name}.{table.condition.column.name} =
-                requestContext.{table.condition.requestContextField.key}
-              </Text>
-            ) : (
-              <Text fz="sm" c="dimmed">
-                No row-level filter configured.
-              </Text>
-            )}
-          </Code>
-        </Box>
+        <SemanticColumnsTable columns={table.columns} />
 
-        <Box mt="md">
-          <Badge color="violet" size="sm">
-            Relations
-          </Badge>
-          <RelationsTable
-            title="Active relations"
-            relations={activeRelations}
-            isOpen={relationActiveExpanded}
-            toggle={() => setRelationActiveExpanded((value) => !value)}
-          />
-          <RelationsTable
-            title="Inactive relations"
-            relations={inactiveRelations}
-            isOpen={relationInactiveExpanded}
-            toggle={() => setRelationInactiveExpanded((value) => !value)}
-            muted
-          />
-          <RelationsTable
-            title="Disabled relations"
-            relations={disabledRelations}
-            isOpen={relationDisabledExpanded}
-            toggle={() => setRelationDisabledExpanded((value) => !value)}
-            muted
-          />
-        </Box>
+        {computedColumns.length > 0 && (
+          <SemanticComputedColumnsTable computedColumns={computedColumns} />
+        )}
 
-        <Box mt="md">
-          <Badge color="grape" size="sm">
-            Context
-          </Badge>
-          <Card withBorder shadow="xs" p="md" mt="xs">
-            <Group gap="xs">
+        {table.relations.length > 0 && (
+          <SemanticRelationsTable relations={table.relations} />
+        )}
+
+        {table.context && (
+          <Box mt="lg">
+            <Group gap="xs" align="flex-start">
               <IconInfoCircle size={16} />
-              <Text fw={600} fz="sm">
-                Table prompt
-              </Text>
+              <Box>
+                <Text fw={600} fz="sm">
+                  Table context
+                </Text>
+                <Text fz="sm" mt={4}>
+                  {table.context}
+                </Text>
+              </Box>
             </Group>
-            <Text fz="sm" mt="sm">
-              {table.contextPrompt ?? "No custom table prompt configured."}
-            </Text>
-          </Card>
-        </Box>
+          </Box>
+        )}
       </Card>
     </div>
   );
 }
 
-type ColumnsTableProps = {
-  title: string;
-  columns: ColumnSchema[];
-  computedColumns: ComputedColumnSchema[];
-  isOpen: boolean;
-  toggle: () => void;
-  muted?: boolean;
+type SemanticColumnsTableProps = {
+  columns: SemanticColumn[];
 };
 
-function ColumnsTable({
-  title,
-  columns,
-  computedColumns,
-  isOpen,
-  toggle,
-  muted,
-}: ColumnsTableProps) {
-  if (columns.length === 0 && computedColumns.length === 0) {
-    return null;
-  }
-
+function SemanticColumnsTable({ columns }: SemanticColumnsTableProps) {
   return (
-    <Card
-      withBorder
-      radius="md"
-      mt="sm"
-      p="xs"
-      bg={muted ? "gray.0" : undefined}
-    >
-      <Group
-        justify="space-between"
-        onClick={toggle}
-        style={{ cursor: "pointer" }}
-      >
-        <Text fw={600} fz="sm">
-          {title} ({columns.length + computedColumns.length})
-        </Text>
-        {isOpen ? <IconChevronUp size={14} /> : <IconChevronDown size={14} />}
-      </Group>
-      <Collapse in={isOpen}>
-        <Table verticalSpacing={6} mt="sm">
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th w={60}>On</Table.Th>
-              <Table.Th>Name</Table.Th>
-              <Table.Th>Type</Table.Th>
-              <Table.Th>Description</Table.Th>
+    <Box>
+      <Badge color="gray" size="sm" variant="light">
+        Columns
+      </Badge>
+      <Table verticalSpacing={6} mt="sm">
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>Name</Table.Th>
+            <Table.Th>Type</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
+          {columns.map((column) => (
+            <Table.Tr key={column.name}>
+              <Table.Td>
+                <Text fw={500}>{column.name}</Text>
+              </Table.Td>
+              <Table.Td>
+                <Text fz="sm">{column.type}</Text>
+              </Table.Td>
             </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {columns.map((column) => (
-              <Table.Tr key={column.id}>
-                <Table.Td>
-                  <Checkbox checked={column.selected} readOnly disabled />
-                </Table.Td>
-                <Table.Td>
-                  <Group gap={6} wrap="nowrap">
-                    <Text>{column.rename ?? column.name}</Text>
-                    {column.rename && column.rename !== column.name && (
-                      <Badge size="xs" color="yellow" variant="light">
-                        Renamed
-                      </Badge>
-                    )}
-                  </Group>
-                </Table.Td>
-                <Table.Td>
-                  <Group gap={6} wrap="nowrap">
-                    <Text fz="sm">{column.type}</Text>
-                    {column.unit && (
-                      <Badge size="xs" variant="light">
-                        {column.unit}
-                      </Badge>
-                    )}
-                  </Group>
-                </Table.Td>
-                <Table.Td>
-                  <Text fz="xs" c="dimmed">
-                    {column.notes ?? "—"}
-                  </Text>
-                </Table.Td>
-              </Table.Tr>
-            ))}
-            {computedColumns.map((column) => (
-              <Table.Tr key={column.id}>
-                <Table.Td>
-                  <Checkbox checked={column.selected} readOnly disabled />
-                </Table.Td>
-                <Table.Td>
-                  <Group gap={6} wrap="nowrap">
-                    <Text>{column.name}</Text>
-                    <Badge size="xs" color="teal" variant="light">
-                      Computed
-                    </Badge>
-                  </Group>
-                </Table.Td>
-                <Table.Td>
-                  <Group gap={6} wrap="nowrap">
-                    <Text fz="sm">{column.type}</Text>
-                    {column.unit && (
-                      <Badge size="xs" variant="light">
-                        {column.unit}
-                      </Badge>
-                    )}
-                  </Group>
-                </Table.Td>
-                <Table.Td>
-                  <Code fz="xs">= {column.expression}</Code>
-                </Table.Td>
-              </Table.Tr>
-            ))}
-          </Table.Tbody>
-        </Table>
-      </Collapse>
-    </Card>
+          ))}
+        </Table.Tbody>
+      </Table>
+    </Box>
   );
 }
 
-type RelationsTableProps = {
-  title: string;
-  relations: RelationSchema[];
-  isOpen: boolean;
-  toggle: () => void;
-  muted?: boolean;
+type SemanticComputedColumnsTableProps = {
+  computedColumns: SemanticComputedColumn[];
 };
 
-function RelationsTable({
-  title,
+function SemanticComputedColumnsTable({
+  computedColumns,
+}: SemanticComputedColumnsTableProps) {
+  return (
+    <Box mt="lg">
+      <Badge color="teal" size="sm" variant="light">
+        Computed columns
+      </Badge>
+      <Table verticalSpacing={6} mt="sm">
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>Name</Table.Th>
+            <Table.Th>Type</Table.Th>
+            <Table.Th>Expression</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
+          {computedColumns.map((column) => (
+            <Table.Tr key={column.name}>
+              <Table.Td>
+                <Group gap={6} wrap="nowrap">
+                  <Text fw={500}>{column.name}</Text>
+                  <Badge size="xs" color="teal" variant="light">
+                    Computed
+                  </Badge>
+                </Group>
+              </Table.Td>
+              <Table.Td>
+                <Group gap={6} wrap="nowrap">
+                  <Text fz="sm">{column.type}</Text>
+                  {column.unit && (
+                    <Badge size="xs" variant="light">
+                      {column.unit}
+                    </Badge>
+                  )}
+                </Group>
+              </Table.Td>
+              <Table.Td>
+                <Code fz="xs">{column.expression}</Code>
+              </Table.Td>
+            </Table.Tr>
+          ))}
+        </Table.Tbody>
+      </Table>
+    </Box>
+  );
+}
+
+type SemanticRelationsTableProps = {
+  relations: SemanticRelation[];
+};
+
+function SemanticRelationsTable({
   relations,
-  isOpen,
-  toggle,
-  muted,
-}: RelationsTableProps) {
+}: SemanticRelationsTableProps) {
   if (relations.length === 0) {
     return null;
   }
 
+  const formatMappings = (relation: SemanticRelation) => {
+    if (!relation.sourceColumns || relation.sourceColumns.length === 0) {
+      return "—";
+    }
+
+    return relation.sourceColumns
+      .map((sourceColumn, index) => {
+        const targetColumn = relation.targetColumns?.[index];
+        if (targetColumn) {
+          return `${sourceColumn} → ${targetColumn}`;
+        }
+        if (relation.targetColumns && relation.targetColumns.length > 0) {
+          return `${sourceColumn} → ${relation.targetColumns[0]}`;
+        }
+        return sourceColumn;
+      })
+      .join(", ");
+  };
+
   return (
-    <Card
-      withBorder
-      radius="md"
-      mt="sm"
-      p="xs"
-      bg={muted ? "gray.0" : undefined}
-    >
-      <Group
-        justify="space-between"
-        onClick={toggle}
-        style={{ cursor: "pointer" }}
-      >
-        <Text fw={600} fz="sm">
-          {title} ({relations.length})
-        </Text>
-        {isOpen ? <IconChevronUp size={14} /> : <IconChevronDown size={14} />}
-      </Group>
-      <Collapse in={isOpen}>
-        <Table verticalSpacing={6} mt="sm">
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th w={60}>On</Table.Th>
-              <Table.Th>Relation</Table.Th>
-              <Table.Th>Target table</Table.Th>
-              <Table.Th>Mappings</Table.Th>
+    <Box mt="lg">
+      <Badge color="violet" size="sm" variant="light">
+        Relations
+      </Badge>
+      <Table verticalSpacing={6} mt="sm">
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>Relation</Table.Th>
+            <Table.Th>Target table</Table.Th>
+            <Table.Th>Cardinality</Table.Th>
+            <Table.Th>Mappings</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
+          {relations.map((relation) => (
+            <Table.Tr key={`${relation.name}-${relation.targetTable}`}>
+              <Table.Td>
+                <Text fw={500}>{relation.name}</Text>
+              </Table.Td>
+              <Table.Td>
+                <Text>{relation.targetTable}</Text>
+              </Table.Td>
+              <Table.Td>
+                <Text fz="sm">
+                  {relation.isList ? "One-to-many" : "One-to-one"}
+                </Text>
+              </Table.Td>
+              <Table.Td>
+                <Text fz="xs" c="dimmed">
+                  {formatMappings(relation)}
+                </Text>
+              </Table.Td>
             </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {relations.map((relation) => (
-              <Table.Tr key={relation.id}>
-                <Table.Td>
-                  <Checkbox
-                    checked={relation.selected}
-                    readOnly
-                    disabled
-                    styles={{ input: { cursor: "not-allowed" } }}
-                  />
-                </Table.Td>
-                <Table.Td>
-                  <Group gap={6} wrap="wrap" align="center">
-                    <Text>{relation.name}</Text>
-                    {relation.source === "MANUAL" && (
-                      <Badge size="xs" color="violet">
-                        Manual
-                      </Badge>
-                    )}
-                    {relation.status === "BROKEN" && (
-                      <Badge size="xs" color="red">
-                        Broken
-                      </Badge>
-                    )}
-                  </Group>
-                </Table.Td>
-                <Table.Td>
-                  <Group gap={6} wrap="wrap" align="center">
-                    <Text>{relation.targetTable.name}</Text>
-                    <Badge
-                      size="xs"
-                      variant="light"
-                      color={
-                        tableAccessLabels[relation.targetTable.access].color
-                      }
-                    >
-                      {tableAccessLabels[relation.targetTable.access].label}
-                    </Badge>
-                    {relation.isList && (
-                      <Badge size="xs" variant="light">
-                        List
-                      </Badge>
-                    )}
-                  </Group>
-                </Table.Td>
-                <Table.Td>
-                  <Text fz="xs" c="dimmed">
-                    {relation.columnMappings
-                      .map(
-                        (mapping) =>
-                          `${mapping.sourceColumnName} → ${mapping.targetColumnName}`,
-                      )
-                      .join(", ") || "—"}
-                    {relation.errorTag ? ` · ${relation.errorTag}` : ""}
-                  </Text>
-                </Table.Td>
-              </Table.Tr>
-            ))}
-          </Table.Tbody>
-        </Table>
-      </Collapse>
-    </Card>
+          ))}
+        </Table.Tbody>
+      </Table>
+    </Box>
   );
 }
 
@@ -1441,7 +483,10 @@ function DatabaseSelector({
   activeTableId,
   onSelect,
 }: DatabaseSelectorProps) {
-  const fallbackId = DATABASE_VIEWER_TABLES[0]?.id ?? null;
+  const availableTables = DATABASE_VIEWER_TABLES.filter(
+    (table) => SEMANTIC_TABLE_MAP[table.id],
+  );
+  const fallbackId = availableTables[0]?.id ?? SEMANTIC_TABLES[0]?.id ?? null;
   const value =
     activeTableId && DATABASE_VIEWER_MAP[activeTableId]
       ? activeTableId
@@ -1451,11 +496,11 @@ function DatabaseSelector({
     return null;
   }
 
-  const segments = DATABASE_VIEWER_TABLES.map((table) => ({
+  const segments = availableTables.map((table) => ({
     value: table.id,
     label: (
       <Text fw={600} fz="xs" tt="lowercase">
-        {DATABASE_FIXTURE.tables[table.id]?.name ?? table.id}
+        {SEMANTIC_TABLE_MAP[table.id]?.name ?? table.id}
       </Text>
     ),
   }));
@@ -1508,15 +553,9 @@ function DatabaseViewer({
   const selectedSource = selectedTableId
     ? DATABASE_VIEWER_MAP[selectedTableId]
     : undefined;
-  const selectedMetadata =
-    selectedTableId && DATABASE_FIXTURE.tables[selectedTableId]
-      ? DATABASE_FIXTURE.tables[selectedTableId]
-      : null;
-
-  const isTableDisabled = selectedMetadata?.access === "OFF";
 
   useEffect(() => {
-    if (!selectedSource || !selectedTableId || isTableDisabled) {
+    if (!selectedSource || !selectedTableId) {
       setQueryState((prev) => ({
         ...prev,
         status: "idle",
@@ -1583,13 +622,7 @@ function DatabaseViewer({
       });
 
     return () => controller.abort();
-  }, [
-    selectedSource,
-    selectedTableId,
-    page,
-    pageSize,
-    isTableDisabled,
-  ]);
+  }, [selectedSource, selectedTableId, page, pageSize]);
 
   useEffect(() => {
     setPage((current) => {
@@ -1617,18 +650,6 @@ function DatabaseViewer({
 
   return (
     <Box mt="md">
-      {isTableDisabled && (
-        <Card withBorder radius="md" mt="sm" bg="gray.0">
-          <Group gap="xs" align="flex-start">
-            <IconInfoCircle size={16} />
-            <Text fz="sm">
-              Access for this table is disabled in the demo. Data explorer is
-              read-only.
-            </Text>
-          </Group>
-        </Card>
-      )}
-
       {isLoading ? (
         <Card withBorder radius="md" mt="md">
           <Text fz="sm">Loading rows…</Text>
