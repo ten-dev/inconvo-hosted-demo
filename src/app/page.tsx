@@ -232,6 +232,8 @@ function SemanticTableView({ table }: SemanticTableViewProps) {
       <Title order={4}>Semantic Model</Title>
       <Card withBorder radius="lg" p="md">
         <Stack gap="md">
+          {table.context && <SemanticContextSection context={table.context} />}
+
           <SemanticColumnsSection
             columns={table.columns}
             computedColumns={computedColumns}
@@ -240,8 +242,6 @@ function SemanticTableView({ table }: SemanticTableViewProps) {
           {table.relations.length > 0 && (
             <SemanticRelationsSection relations={table.relations} />
           )}
-
-          {table.context && <SemanticContextSection context={table.context} />}
         </Stack>
       </Card>
     </div>
@@ -262,8 +262,8 @@ function SemanticColumnsSection({
   computedColumns,
 }: SemanticColumnsSectionProps) {
   const rows: SemanticColumnRow[] = [
-    ...columns.map((column) => ({ kind: "base", column })),
     ...computedColumns.map((column) => ({ kind: "computed", column })),
+    ...columns.map((column) => ({ kind: "base", column })),
   ];
 
   return (
