@@ -6,14 +6,22 @@ import {
 import type { FC, PropsWithChildren } from "react";
 
 import { Thread } from "~/components/assistant-ui/thread";
+import type { OrganisationSelectorProps } from "~/components/organisation/organisation-selector";
 
-export const AssistantSidebar: FC<PropsWithChildren> = ({ children }) => {
+type AssistantSidebarProps = PropsWithChildren<{
+  organisationSelectorProps?: OrganisationSelectorProps;
+}>;
+
+export const AssistantSidebar: FC<AssistantSidebarProps> = ({
+  children,
+  organisationSelectorProps,
+}) => {
   return (
     <ResizablePanelGroup direction="horizontal">
       <ResizablePanel defaultSize={60}>{children}</ResizablePanel>
       <ResizableHandle />
       <ResizablePanel defaultSize={40}>
-        <Thread />
+        <Thread organisationSelectorProps={organisationSelectorProps} />
       </ResizablePanel>
     </ResizablePanelGroup>
   );

@@ -4,6 +4,7 @@ import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -27,10 +28,10 @@ import {
   Stack,
   Table,
   Text,
+  Title,
   Tooltip,
   rem,
   Code,
-  Title,
 } from "@mantine/core";
 import {
   IconInfoCircle,
@@ -49,10 +50,23 @@ import {
   type SemanticRelation,
   type SemanticViewerColumn,
 } from "~/data/database/semanticSchema";
+import type {
+  OrganisationLoadState,
+  OrganisationOption,
+  OrganisationSelectorProps,
+} from "~/components/organisation/organisation-selector";
 
 const DATABASE_VIEWER_TABLE_WIDTH = 900;
 
 const DEFAULT_TABLE_ID = SEMANTIC_TABLES[0]?.id ?? null;
+
+type OrganisationsApiResponse = {
+  rows?: Array<Record<string, unknown>>;
+  error?: unknown;
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
 
 type SectionSurfaceOptions = {
   padded?: boolean;
@@ -79,6 +93,15 @@ export default function HomePage() {
   );
   const [infoModalOpen, setInfoModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [organisations, setOrganisations] = useState<OrganisationOption[]>([]);
+  const [organisationStatus, setOrganisationStatus] =
+    useState<OrganisationLoadState>("loading");
+  const [organisationError, setOrganisationError] = useState<string | null>(
+    null,
+  );
+  const [selectedOrganisationId, setSelectedOrganisationId] = useState<
+    number | null
+  >(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const selectedTable =
     focusedTableId && SEMANTIC_TABLE_MAP[focusedTableId]
@@ -117,6 +140,106 @@ export default function HomePage() {
     }
   }, [isDragging]);
 
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const loadOrganisations = async () => {
+      setOrganisationStatus("loading");
+      setOrganisationError(null);
+
+      try {
+        const params = new URLSearchParams({
+          table: "organisations",
+          page: "1",
+          pageSize: "50",
+        });
+
+        const response = await fetch(`/api/database?${params.toString()}`, {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          const payload = (await response
+            .json()
+            .catch(() => ({ error: response.statusText }))) as OrganisationsApiResponse;
+          throw new Error(
+            typeof payload.error === "string"
+              ? payload.error
+              : "Unable to load organisations",
+          );
+        }
+
+        const payload = (await response.json()) as OrganisationsApiResponse;
+        const rows = Array.isArray(payload.rows) ? payload.rows : [];
+        const options = rows
+          .map((row) => {
+            if (!isRecord(row)) {
+              return null;
+            }
+            const idValue = row.id;
+            const parsedId =
+              typeof idValue === "number"
+                ? idValue
+                : typeof idValue === "string"
+                  ? Number.parseInt(idValue, 10)
+                  : null;
+
+            if (parsedId === null || Number.isNaN(parsedId)) {
+              return null;
+            }
+
+            const name =
+              typeof row.name === "string"
+                ? row.name
+                : `Organisation ${parsedId}`;
+
+            return {
+              id: parsedId,
+              name,
+            };
+          })
+          .filter((option): option is OrganisationOption => option !== null);
+
+        setOrganisations(options);
+        setOrganisationStatus("ready");
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") {
+          return;
+        }
+
+        setOrganisations([]);
+        setOrganisationStatus("error");
+        setOrganisationError(
+          error instanceof Error
+            ? error.message
+            : "Unable to load organisations",
+        );
+      }
+    };
+
+    void loadOrganisations();
+
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    if (organisations.length === 0) {
+      setSelectedOrganisationId(null);
+      return;
+    }
+
+    setSelectedOrganisationId((current) => {
+      if (current && organisations.some((org) => org.id === current)) {
+        return current;
+      }
+      return organisations[0]?.id ?? null;
+    });
+  }, [organisations]);
+
+  const handleOrganisationChange = useCallback((value: number | null) => {
+    setSelectedOrganisationId(value);
+  }, []);
+
   const demoSteps = [
     {
       title: "Welcome to Inconvo Demo",
@@ -148,9 +271,20 @@ export default function HomePage() {
   const totalSteps = demoSteps.length;
   const currentStepData = demoSteps[currentStep];
 
+  const organisationSelectorProps: OrganisationSelectorProps = {
+    options: organisations,
+    value: selectedOrganisationId,
+    status: organisationStatus,
+    error: organisationError,
+    onChange: handleOrganisationChange,
+  };
+
   return (
-    <Assistant>
-      <MantineProvider defaultColorScheme="light">
+    <MantineProvider defaultColorScheme="light">
+      <Assistant
+        organisationId={selectedOrganisationId}
+        organisationSelectorProps={organisationSelectorProps}
+      >
         <Modal
           opened={infoModalOpen}
           onClose={() => setInfoModalOpen(false)}
@@ -205,7 +339,7 @@ export default function HomePage() {
             }}
           >
             <Box mb="md">
-              <Group justify="space-between" align="center" mb={rem(8)}>
+              <Group justify="space-between" align="flex-start" mb={rem(8)}>
                 <Group gap="sm" align="center">
                   <img
                     src="/logo.png"
@@ -310,8 +444,8 @@ export default function HomePage() {
             </Flex>
           </Box>
         </main>
-      </MantineProvider>
-    </Assistant>
+      </Assistant>
+    </MantineProvider>
   );
 }
 

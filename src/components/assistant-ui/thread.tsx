@@ -26,15 +26,22 @@ import { MarkdownText } from "~/components/assistant-ui/markdown-text";
 import { ToolFallback } from "~/components/assistant-ui/tool-fallback";
 import { TooltipIconButton } from "~/components/assistant-ui/tooltip-icon-button";
 import {
-  ComposerAddAttachment,
   ComposerAttachments,
   UserMessageAttachments,
 } from "~/components/assistant-ui/attachment";
 
 import { cn } from "~/lib/utils";
 import { InconvoTools } from "./tools/inconvo-tools";
+import {
+  OrganisationSelector,
+  type OrganisationSelectorProps,
+} from "~/components/organisation/organisation-selector";
 
-export const Thread: FC = () => {
+type ThreadProps = {
+  organisationSelectorProps?: OrganisationSelectorProps;
+};
+
+export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
   return (
     <ThreadPrimitive.Root
       className="aui-root aui-thread-root bg-background @container flex h-full flex-col"
@@ -42,6 +49,16 @@ export const Thread: FC = () => {
         ["--thread-max-width" as string]: "44rem",
       }}
     >
+      {organisationSelectorProps ? (
+        <div className="aui-thread-organisation px-4 pt-4">
+          <div className="flex justify-end">
+            <OrganisationSelector
+              {...organisationSelectorProps}
+              label="Organisation"
+            />
+          </div>
+        </div>
+      ) : null}
       <InconvoTools />
       <ThreadPrimitive.Viewport
         turnAnchor="top"
@@ -164,9 +181,7 @@ const Composer: FC = () => {
 
 const ComposerAction: FC = () => {
   return (
-    <div className="aui-composer-action-wrapper relative mx-1 mt-2 mb-2 flex items-center justify-between">
-      <ComposerAddAttachment />
-
+    <div className="aui-composer-action-wrapper relative mx-1 mt-2 mb-2 flex items-center justify-end gap-2">
       <ThreadPrimitive.If running={false}>
         <ComposerPrimitive.Send asChild>
           <TooltipIconButton
