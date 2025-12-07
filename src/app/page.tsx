@@ -20,6 +20,7 @@ import {
   Flex,
   Group,
   MantineProvider,
+  Modal,
   Pagination,
   ScrollArea,
   SegmentedControl,
@@ -76,6 +77,8 @@ export default function HomePage() {
   const [focusedTableId, setFocusedTableId] = useState<string | null>(
     DEFAULT_TABLE_ID,
   );
+  const [infoModalOpen, setInfoModalOpen] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const selectedTable =
     focusedTableId && SEMANTIC_TABLE_MAP[focusedTableId]
@@ -114,9 +117,80 @@ export default function HomePage() {
     }
   }, [isDragging]);
 
+  const demoSteps = [
+    {
+      title: "Welcome to Inconvo Demo",
+      content:
+        "This interactive demo showcases how Inconvo helps you build semantic models on top of your database. Navigate through these steps to understand the key features.",
+    },
+    {
+      title: "Semantic Model View",
+      content:
+        "The top panel displays your semantic model configuration. Here you can see columns, computed columns, and relationships that define how your data connects and behaves.",
+    },
+    {
+      title: "Table Selector",
+      content:
+        "Use the segmented control below the title to switch between different tables in your database. Each table has its own semantic configuration.",
+    },
+    {
+      title: "Live Data Preview",
+      content:
+        "The bottom panel shows real-time data from your selected table. This helps you verify that your semantic model correctly represents your actual data.",
+    },
+    {
+      title: "AI Assistant",
+      content:
+        "Ask questions about your data in natural language! The AI assistant understands your semantic model and can query your database to answer questions.",
+    },
+  ];
+
+  const totalSteps = demoSteps.length;
+  const currentStepData = demoSteps[currentStep];
+
   return (
     <Assistant>
       <MantineProvider defaultColorScheme="light">
+        <Modal
+          opened={infoModalOpen}
+          onClose={() => setInfoModalOpen(false)}
+          title={currentStepData?.title}
+          size="xl"
+          centered
+        >
+          <Stack gap="lg">
+            <Text size="sm">{currentStepData?.content}</Text>
+
+            <Group justify="space-between" align="center">
+              <Text size="xs" c="dimmed">
+                Step {currentStep + 1} of {totalSteps}
+              </Text>
+              <Group gap="xs">
+                <Button
+                  variant="default"
+                  size="sm"
+                  disabled={currentStep === 0}
+                  onClick={() => setCurrentStep((prev) => prev - 1)}
+                >
+                  Previous
+                </Button>
+                {currentStep < totalSteps - 1 ? (
+                  <Button
+                    size="sm"
+                    onClick={() => setCurrentStep((prev) => prev + 1)}
+                  >
+                    Next
+                  </Button>
+                ) : (
+                  <Button size="sm" onClick={() => setInfoModalOpen(false)}>
+                    Get Started
+                  </Button>
+                )}
+              </Group>
+            </Group>
+          </Stack>
+        </Modal>
+
         <main className="bg-background text-foreground flex min-h-screen flex-col">
           <Box
             component="section"
@@ -146,8 +220,8 @@ export default function HomePage() {
                   size="lg"
                   radius="xl"
                   onClick={() => {
-                    // Add your info click handler here
-                    console.log("Info icon clicked");
+                    setInfoModalOpen(true);
+                    setCurrentStep(0);
                   }}
                   aria-label="Information"
                 >
