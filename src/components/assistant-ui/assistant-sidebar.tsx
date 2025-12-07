@@ -10,9 +10,9 @@ import { Thread } from "~/components/assistant-ui/thread";
 export const AssistantSidebar: FC<PropsWithChildren> = ({ children }) => {
   return (
     <ResizablePanelGroup direction="horizontal">
-      <ResizablePanel>{children}</ResizablePanel>
+      <ResizablePanel defaultSize={60}>{children}</ResizablePanel>
       <ResizableHandle />
-      <ResizablePanel>
+      <ResizablePanel defaultSize={40}>
         <Thread />
       </ResizablePanel>
     </ResizablePanelGroup>
