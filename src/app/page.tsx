@@ -6,6 +6,7 @@ import "@mantine/notifications/styles.css";
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type CSSProperties,
@@ -271,6 +272,23 @@ export default function HomePage() {
   const totalSteps = demoSteps.length;
   const currentStepData = demoSteps[currentStep];
 
+  const selectedOrganisation = useMemo(() => {
+    if (selectedOrganisationId === null) {
+      return null;
+    }
+    return organisations.find((org) => org.id === selectedOrganisationId) ?? null;
+  }, [organisations, selectedOrganisationId]);
+
+  const organisationFilterLabel = useMemo(() => {
+    if (!selectedOrganisation) {
+      return null;
+    }
+    const labelName = selectedOrganisation.name
+      ? selectedOrganisation.name.toLowerCase()
+      : "";
+    return `scoped to organisation.id ${selectedOrganisation.id}${labelName ? ` ${labelName}` : ""}`;
+  }, [selectedOrganisation]);
+
   const organisationSelectorProps: OrganisationSelectorProps = {
     options: organisations,
     value: selectedOrganisationId,
@@ -441,7 +459,7 @@ export default function HomePage() {
                   {selectedOrganisationId !== null &&
                   selectedTable?.name !== "organisations" ? (
                     <Badge color="blue" variant="light">
-                      Filtered by organisation
+                      {organisationFilterLabel ?? "Filtered by organisation"}
                     </Badge>
                   ) : null}
                 </Group>
