@@ -28,14 +28,23 @@ export const Assistant = ({
     return new AssistantChatTransport({
       api: "/api/chat",
       prepareSendMessagesRequest: (options) => {
+        const baseBody: Record<string, unknown> = options.body ?? {};
         if (scopedOrganisationId === null) {
-          return;
+          return { body: baseBody };
         }
 
-        options.body = {
-          ...(options.body ?? {}),
-          userContext: {
-            organisationId: scopedOrganisationId,
+        const existingUserContext =
+          typeof baseBody.userContext === "object" && baseBody.userContext !== null
+            ? (baseBody.userContext as Record<string, unknown>)
+            : {};
+
+        return {
+          body: {
+            ...baseBody,
+            userContext: {
+              ...existingUserContext,
+              organisationId: scopedOrganisationId,
+            },
           },
         };
       },

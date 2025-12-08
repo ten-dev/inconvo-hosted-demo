@@ -11,6 +11,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
+import NextImage from "next/image";
 import {
   ActionIcon,
   Badge,
@@ -57,8 +58,6 @@ import type {
   OrganisationOption,
   OrganisationSelectorProps,
 } from "~/components/organisation/organisation-selector";
-
-const DATABASE_VIEWER_TABLE_WIDTH = 900;
 
 const DEFAULT_TABLE_ID = SEMANTIC_TABLES[0]?.id ?? null;
 
@@ -594,7 +593,7 @@ export default function HomePage() {
             <Box mb="md">
               <Group justify="space-between" align="flex-start" mb={rem(8)}>
                 <Group gap="sm" align="center">
-                  <img
+                  <NextImage
                     src="/logo.png"
                     alt="Inconvo Logo"
                     width={32}
@@ -1115,32 +1114,52 @@ function DatabaseViewer({
       params.set("whereClause", whereClause);
     }
 
-    fetch(`/api/database?${params.toString()}`, {
-      signal: controller.signal,
-    })
-      .then(async (response) => {
-        if (response.ok) {
-          return response.json();
-        }
-        const payload = await response
+    const fetchRows = async () => {
+      try {
+        const response = await fetch(`/api/database?${params.toString()}`, {
+          signal: controller.signal,
+        });
+
+        const payload: unknown = await response
           .json()
           .catch(() => ({ error: response.statusText }));
-        throw new Error(
-          typeof payload.error === "string"
-            ? payload.error
-            : "Unable to fetch database table",
-        );
-      })
-      .then((payload) => {
+
+        if (!response.ok) {
+          const errorMessage =
+            isRecord(payload) && typeof payload.error === "string"
+              ? payload.error
+              : "Unable to fetch database table";
+          throw new Error(errorMessage);
+        }
+
+        if (!isRecord(payload)) {
+          throw new Error("Unexpected response format from database API");
+        }
+
+        const rowsPayload: Record<string, unknown>[] = Array.isArray(
+          payload.rows,
+        )
+          ? payload.rows.filter(isRecord)
+          : [];
+
+        const totalPagesValue =
+          typeof payload.totalPages === "number" && payload.totalPages > 0
+            ? payload.totalPages
+            : 1;
+
+        const totalCountValue =
+          typeof payload.totalCount === "number" && payload.totalCount >= 0
+            ? payload.totalCount
+            : 0;
+
         setQueryState({
           status: "success",
-          rows: Array.isArray(payload?.rows) ? payload.rows : [],
-          totalPages: payload?.totalPages ?? 1,
-          totalCount: payload?.totalCount ?? 0,
+          rows: rowsPayload,
+          totalPages: totalPagesValue,
+          totalCount: totalCountValue,
           error: undefined,
         });
-      })
-      .catch((error) => {
+      } catch (error) {
         if (error instanceof Error && error.name === "AbortError") {
           return;
         }
@@ -1154,12 +1173,16 @@ function DatabaseViewer({
               ? error.message
               : "Unable to load table rows",
         });
-      });
+      }
+    };
+
+    void fetchRows();
 
     return () => controller.abort();
   }, [
     selectedSemanticTable?.id,
     selectedSemanticTable?.name,
+    selectedSemanticTable,
     hasViewerConfig,
     page,
     pageSize,
@@ -1303,7 +1326,10 @@ function formatCellValue(
   }
 
   if (typeof value === "number") {
-    return String(value);
+    const formatted = Number.isInteger(value)
+      ? value.toLocaleString()
+      : value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    return column?.unit ? `${formatted} ${column.unit}` : formatted;
   }
 
   if (typeof value === "string") {
@@ -1317,5 +1343,29 @@ function formatCellValue(
     return value;
   }
 
-  return String(value);
+  if (value instanceof Date) {
+    return value.toLocaleString();
+  }
+
+  if (typeof value === "object") {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return "[unserializable]";
+    }
+  }
+
+  if (typeof value === "bigint") {
+    return value.toString();
+  }
+
+  if (typeof value === "symbol") {
+    return value.description ? `Symbol(${value.description})` : "Symbol()";
+  }
+
+  if (typeof value === "function") {
+    return value.name ? `[fn ${value.name}]` : "[fn]";
+  }
+
+  return "";
 }

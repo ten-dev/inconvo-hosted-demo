@@ -13,7 +13,6 @@ import {
   text,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm/relations";
-import { sql } from "drizzle-orm";
 
 export const organisations = pgTable(
   "organisations",

@@ -57,10 +57,15 @@ const useCopyToClipboard = ({
   const copyToClipboard = (value: string) => {
     if (!value) return;
 
-    navigator.clipboard.writeText(value).then(() => {
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), copiedDuration);
-    });
+    void navigator.clipboard
+      .writeText(value)
+      .then(() => {
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), copiedDuration);
+      })
+      .catch(() => {
+        setIsCopied(false);
+      });
   };
 
   return { isCopied, copyToClipboard };
