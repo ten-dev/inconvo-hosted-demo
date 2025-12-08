@@ -592,7 +592,7 @@ export default function HomePage() {
           >
             <Box mb="md">
               <Group justify="space-between" align="flex-start" mb={rem(8)}>
-                <Group gap="sm" align="center">
+                <Group gap="sm" align="center" mb={rem(8)}>
                   <NextImage
                     src="/logo.png"
                     alt="Inconvo Logo"

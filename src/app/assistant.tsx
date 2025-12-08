@@ -29,22 +29,30 @@ export const Assistant = ({
       api: "/api/chat",
       prepareSendMessagesRequest: (options) => {
         const baseBody: Record<string, unknown> = options.body ?? {};
-        if (scopedOrganisationId === null) {
-          return { body: baseBody };
-        }
-
         const existingUserContext =
           typeof baseBody.userContext === "object" && baseBody.userContext !== null
             ? (baseBody.userContext as Record<string, unknown>)
             : {};
 
+        const bodyWithContext =
+          scopedOrganisationId === null
+            ? baseBody
+            : {
+                ...baseBody,
+                userContext: {
+                  ...existingUserContext,
+                  organisationId: scopedOrganisationId,
+                },
+              };
+
         return {
           body: {
-            ...baseBody,
-            userContext: {
-              ...existingUserContext,
-              organisationId: scopedOrganisationId,
-            },
+            ...bodyWithContext,
+            id: options.id,
+            messages: options.messages,
+            trigger: options.trigger,
+            messageId: options.messageId,
+            metadata: options.requestMetadata,
           },
         };
       },
