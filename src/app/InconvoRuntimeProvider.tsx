@@ -206,8 +206,12 @@ export function InconvoRuntimeProvider({
                 ),
               );
             } else if (event.type === "response.completed") {
-              conversationIdRef.current = event.response.conversationId;
-              setConversationId(event.response.conversationId);
+              const nextConversationId =
+                event.response.conversationId ?? conversationIdRef.current;
+              if (nextConversationId) {
+                conversationIdRef.current = nextConversationId;
+                setConversationId(nextConversationId);
+              }
               setMessageState((prev) =>
                 prev.map((msg) =>
                   msg.id === assistantMessageId
