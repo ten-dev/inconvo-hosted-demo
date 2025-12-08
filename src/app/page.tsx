@@ -953,12 +953,7 @@ function DatabaseViewer({
           <Text fz="sm">No rows available yet.</Text>
         </Card>
       ) : (
-        <Box
-          style={{
-            width: `${DATABASE_VIEWER_TABLE_WIDTH}px`,
-            maxWidth: "100%",
-          }}
-        >
+        <Box style={{ width: "100%" }}>
           <ScrollArea
             offsetScrollbars
             style={{
