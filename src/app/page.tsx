@@ -433,7 +433,7 @@ export default function HomePage() {
                     h={rem(480)}
                     w="100%"
                     styles={{
-                      image: {
+                      root: {
                         objectPosition: "center",
                       },
                     }}
