@@ -436,10 +436,19 @@ export default function HomePage() {
                   marginTop: 0,
                 }}
               >
-                <Title order={6} mb="xs">
-                  Example Data
-                </Title>
-                <DatabaseViewer activeTableId={focusedTableId} />
+                <Group justify="space-between" align="center" mb="xs">
+                  <Title order={6}>Example Data</Title>
+                  {selectedOrganisationId !== null &&
+                  selectedTable?.name !== "organisations" ? (
+                    <Badge color="blue" variant="light">
+                      Filtered by organisation
+                    </Badge>
+                  ) : null}
+                </Group>
+                <DatabaseViewer
+                  activeTableId={focusedTableId}
+                  organisationId={selectedOrganisationId}
+                />
               </Card>
             </Flex>
           </Box>
@@ -835,9 +844,13 @@ function DatabaseSelector({ activeTableId, onSelect }: DatabaseSelectorProps) {
 
 type DatabaseViewerProps = {
   activeTableId: string | null;
+  organisationId: number | null;
 };
 
-function DatabaseViewer({ activeTableId }: DatabaseViewerProps) {
+function DatabaseViewer({
+  activeTableId,
+  organisationId,
+}: DatabaseViewerProps) {
   const fallbackTableId = DEFAULT_TABLE_ID;
   const selectedTableId =
     activeTableId && SEMANTIC_TABLE_MAP[activeTableId]
@@ -867,9 +880,15 @@ function DatabaseViewer({ activeTableId }: DatabaseViewerProps) {
     error: undefined,
   });
 
+  const shouldFilterByOrganisation =
+    organisationId !== null && selectedSemanticTable?.name !== "organisations";
+  const whereClause = shouldFilterByOrganisation
+    ? `organisation_id = ${organisationId}`
+    : undefined;
+
   useEffect(() => {
     setPage(1);
-  }, [selectedTableId]);
+  }, [selectedTableId, whereClause]);
 
   useEffect(() => {
     if (!selectedSemanticTable || !hasViewerConfig) {
@@ -896,6 +915,9 @@ function DatabaseViewer({ activeTableId }: DatabaseViewerProps) {
       page: String(page),
       pageSize: String(pageSize),
     });
+    if (whereClause) {
+      params.set("whereClause", whereClause);
+    }
 
     fetch(`/api/database?${params.toString()}`, {
       signal: controller.signal,
@@ -945,6 +967,7 @@ function DatabaseViewer({ activeTableId }: DatabaseViewerProps) {
     hasViewerConfig,
     page,
     pageSize,
+    whereClause,
   ]);
 
   useEffect(() => {
