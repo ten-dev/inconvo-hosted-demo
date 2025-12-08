@@ -22,7 +22,7 @@ import {
 import type { FC } from "react";
 
 import { Button } from "~/components/ui/button";
-import { MarkdownText } from "~/components/assistant-ui/markdown-text";
+import { InconvoTextMessage } from "~/components/assistant-ui/inconvo-text-message";
 import { ToolFallback } from "~/components/assistant-ui/tool-fallback";
 import { TooltipIconButton } from "~/components/assistant-ui/tooltip-icon-button";
 import {
@@ -234,7 +234,7 @@ const AssistantMessage: FC = () => {
       <div className="aui-assistant-message-content text-foreground mx-2 leading-7 wrap-break-word">
         <MessagePrimitive.Parts
           components={{
-            Text: MarkdownText,
+            Text: InconvoTextMessage,
             tools: { Fallback: ToolFallback },
           }}
         />
