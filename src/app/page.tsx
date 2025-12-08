@@ -20,6 +20,7 @@ import {
   Checkbox,
   Group,
   Image,
+  Kbd,
   MantineProvider,
   Modal,
   Pagination,
@@ -84,6 +85,42 @@ const getSectionSurfaceStyle = (
   overflow: "hidden",
   padding: options.padded ? rem(12) : undefined,
 });
+
+const ShortcutKeys = ({
+  keys,
+  tone = "muted",
+}: {
+  keys: string[];
+  tone?: "primary" | "muted";
+}) => (
+  <Group gap={4} wrap="nowrap" align="center">
+    {keys.map((key) => (
+      <Kbd
+        key={`${tone}-${key}`}
+        size="xs"
+        style={{
+          borderRadius: rem(6),
+          paddingInline: rem(8),
+          backgroundColor:
+            tone === "primary"
+              ? "rgba(255, 255, 255, 0.2)"
+              : "var(--mantine-color-gray-0, #f8f9fa)",
+          color:
+            tone === "primary"
+              ? "var(--mantine-color-white, #ffffff)"
+              : "var(--mantine-color-dark-6, #212529)",
+          borderColor:
+            tone === "primary"
+              ? "rgba(255, 255, 255, 0.6)"
+              : "var(--mantine-color-gray-3, #dee2e6)",
+          fontWeight: 600,
+        }}
+      >
+        {key}
+      </Kbd>
+    ))}
+  </Group>
+);
 
 export default function HomePage() {
   const [focusedTableId, setFocusedTableId] = useState<string | null>(
@@ -229,7 +266,8 @@ export default function HomePage() {
         "Every organisation generates its own products, orders, users, and reviews.",
       ],
       imageSrc: "/slide1.png",
-      imageAlt: "Illustration representing three organisations sharing one store platform",
+      imageAlt:
+        "Illustration representing three organisations sharing one store platform",
     },
     {
       title: "Slide 2: Your Data Model",
@@ -259,7 +297,8 @@ export default function HomePage() {
         "The agent runs the query and returns a clear, human-readable answer.",
       ],
       imageSrc: "/slide4.png",
-      imageAlt: "Visualization of a natural language question generating SQL and an answer",
+      imageAlt:
+        "Visualization of a natural language question generating SQL and an answer",
     },
     {
       title: "Slide 5: Powered by Inconvo",
@@ -269,15 +308,59 @@ export default function HomePage() {
         "Results flow through chat or API, powering both this demo and AI reporting inside your product.",
       ],
       imageSrc: "/slide5.png",
-      imageAlt: "Graphic representing the Inconvo platform powering AI reporting",
+      imageAlt:
+        "Graphic representing the Inconvo platform powering AI reporting",
     },
   ];
 
   const totalSteps = demoSteps.length;
   const currentStepData =
-    totalSteps > 0
-      ? demoSteps[Math.min(currentStep, totalSteps - 1)]
-      : null;
+    totalSteps > 0 ? demoSteps[Math.min(currentStep, totalSteps - 1)] : null;
+
+  const goToNextStep = useCallback(() => {
+    if (totalSteps === 0) {
+      return;
+    }
+    setCurrentStep((prev) => Math.min(prev + 1, totalSteps - 1));
+  }, [totalSteps]);
+
+  const goToPreviousStep = useCallback(() => {
+    if (totalSteps === 0) {
+      return;
+    }
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
+  }, [totalSteps]);
+
+  useEffect(() => {
+    if (!infoModalOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!event.metaKey) {
+        return;
+      }
+      if (event.key === "Enter") {
+        event.preventDefault();
+        if (currentStep >= totalSteps - 1) {
+          setInfoModalOpen(false);
+        }
+        return;
+      }
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        goToNextStep();
+        return;
+      }
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        goToPreviousStep();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [currentStep, goToNextStep, goToPreviousStep, infoModalOpen, totalSteps]);
 
   const selectedOrganisation = useMemo(() => {
     if (selectedOrganisationId === null) {
@@ -372,28 +455,42 @@ export default function HomePage() {
             )}
 
             <Group justify="space-between" align="center">
-              <Text size="xs" c="dimmed">
-                Step {currentStep + 1} of {totalSteps}
-              </Text>
+              <Stack gap={0} style={{ flexGrow: 1 }}>
+                <Text size="xs" c="dimmed">
+                  Slide {currentStep + 1} of {totalSteps}
+                </Text>
+              </Stack>
               <Group gap="xs">
                 <Button
                   variant="default"
                   size="sm"
                   disabled={currentStep === 0}
-                  onClick={() => setCurrentStep((prev) => prev - 1)}
+                  onClick={goToPreviousStep}
                 >
-                  Previous
+                  <Group gap={8} wrap="nowrap" align="center">
+                    <Text size="sm" fw={600}>
+                      Previous
+                    </Text>
+                    <ShortcutKeys keys={["⌘", "←"]} tone="muted" />
+                  </Group>
                 </Button>
                 {currentStep < totalSteps - 1 ? (
-                  <Button
-                    size="sm"
-                    onClick={() => setCurrentStep((prev) => prev + 1)}
-                  >
-                    Next
+                  <Button size="sm" onClick={goToNextStep}>
+                    <Group gap={8} wrap="nowrap" align="center">
+                      <Text size="sm" fw={600}>
+                        Next
+                      </Text>
+                      <ShortcutKeys keys={["⌘", "→"]} tone="primary" />
+                    </Group>
                   </Button>
                 ) : (
                   <Button size="sm" onClick={() => setInfoModalOpen(false)}>
-                    Get Started
+                    <Group gap={8} wrap="nowrap" align="center">
+                      <Text size="sm" fw={600}>
+                        Get Started
+                      </Text>
+                      <ShortcutKeys keys={["⌘", "↵"]} tone="primary" />
+                    </Group>
                   </Button>
                 )}
               </Group>
