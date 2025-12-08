@@ -128,6 +128,15 @@ export default function HomePage() {
   );
   const [infoModalOpen, setInfoModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+
+  // Auto-open modal on first visit
+  useEffect(() => {
+    const hasVisitedBefore = localStorage.getItem("inconvo-demo-visited");
+    if (!hasVisitedBefore) {
+      setInfoModalOpen(true);
+      localStorage.setItem("inconvo-demo-visited", "true");
+    }
+  }, []);
   const [organisations, setOrganisations] = useState<OrganisationOption[]>([]);
   const [organisationStatus, setOrganisationStatus] =
     useState<OrganisationLoadState>("loading");
