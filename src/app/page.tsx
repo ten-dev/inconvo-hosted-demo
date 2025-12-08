@@ -1106,20 +1106,7 @@ function formatCellValue(
   }
 
   if (typeof value === "number") {
-    const formattedNumber =
-      column?.unit === "USD"
-        ? `$${value.toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}`
-        : value.toLocaleString(undefined, {
-            maximumFractionDigits: 2,
-          });
-
-    if (column?.unit && column.unit !== "USD") {
-      return `${formattedNumber} ${column.unit}`;
-    }
-    return formattedNumber;
+    return String(value);
   }
 
   if (typeof value === "string") {
