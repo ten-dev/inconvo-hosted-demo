@@ -34,6 +34,7 @@ import {
   rem,
   Code,
 } from "@mantine/core";
+import { Notifications, notifications } from "@mantine/notifications";
 import {
   IconInfoCircle,
   IconNote,
@@ -128,12 +129,14 @@ export default function HomePage() {
   );
   const [infoModalOpen, setInfoModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [isFirstVisit, setIsFirstVisit] = useState(false);
 
   // Auto-open modal on first visit
   useEffect(() => {
     const hasVisitedBefore = localStorage.getItem("inconvo-demo-visited");
     if (!hasVisitedBefore) {
       setInfoModalOpen(true);
+      setIsFirstVisit(true);
       localStorage.setItem("inconvo-demo-visited", "true");
     }
   }, []);
@@ -268,8 +271,8 @@ export default function HomePage() {
 
   const demoSteps: DemoSlide[] = [
     {
-      title: "The Demo Store Platform",
-      heading: "A shared store platform with multiple organisations",
+      title: "The Demo Store",
+      heading: "A shared online store for multiple organisations",
       body: [
         "This demo simulates three organisations (Apple, Tesla, and Logitech) each running their own store on the same platform.",
         "Every organisation generates its own products, orders, users, and reviews.",
@@ -340,19 +343,50 @@ export default function HomePage() {
     setCurrentStep((prev) => Math.max(prev - 1, 0));
   }, [totalSteps]);
 
+  const handleModalClose = useCallback(() => {
+    // Only allow closing if it's not the first visit, or if they're on the last step
+    if (isFirstVisit && currentStep < totalSteps - 1) {
+      const remainingSlides = totalSteps - currentStep - 1;
+      notifications.show({
+        title: "Almost there!",
+        message: `Please view ${remainingSlides === 1 ? "the last slide" : `the remaining ${remainingSlides} slides`} before trying the demo.`,
+        color: "blue",
+        autoClose: 4000,
+      });
+      return;
+    }
+    setInfoModalOpen(false);
+  }, [isFirstVisit, currentStep, totalSteps]);
+
   useEffect(() => {
     if (!infoModalOpen) {
       return;
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Handle Escape key
+      if (event.key === "Escape") {
+        if (isFirstVisit && currentStep < totalSteps - 1) {
+          event.preventDefault();
+          event.stopPropagation();
+          const remainingSlides = totalSteps - currentStep - 1;
+          notifications.show({
+            title: "Almost there!",
+            message: `Please view ${remainingSlides === 1 ? "the last slide" : `the remaining ${remainingSlides} slides`} to learn about the demo.`,
+            color: "blue",
+            autoClose: 4000,
+          });
+        }
+        return;
+      }
+
       if (!event.metaKey) {
         return;
       }
       if (event.key === "Enter") {
         event.preventDefault();
         if (currentStep >= totalSteps - 1) {
-          setInfoModalOpen(false);
+          handleModalClose();
         }
         return;
       }
@@ -367,9 +401,39 @@ export default function HomePage() {
       }
     };
 
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      // Check if click is on the modal overlay
+      if (
+        isFirstVisit &&
+        currentStep < totalSteps - 1 &&
+        target.classList.contains("mantine-Modal-overlay")
+      ) {
+        const remainingSlides = totalSteps - currentStep - 1;
+        notifications.show({
+          title: "Almost there!",
+          message: `Please view ${remainingSlides === 1 ? "the last slide" : `the remaining ${remainingSlides} slides`} to learn about the demo.`,
+          color: "blue",
+          autoClose: 4000,
+        });
+      }
+    };
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentStep, goToNextStep, goToPreviousStep, infoModalOpen, totalSteps]);
+    window.addEventListener("click", handleClickOutside);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("click", handleClickOutside);
+    };
+  }, [
+    currentStep,
+    goToNextStep,
+    goToPreviousStep,
+    handleModalClose,
+    infoModalOpen,
+    isFirstVisit,
+    totalSteps,
+  ]);
 
   const selectedOrganisation = useMemo(() => {
     if (selectedOrganisationId === null) {
@@ -400,6 +464,7 @@ export default function HomePage() {
 
   return (
     <MantineProvider defaultColorScheme="light">
+      <Notifications />
       <Assistant
         key={`assistant-${threadResetKey}`}
         organisationId={selectedOrganisationId}
@@ -407,12 +472,15 @@ export default function HomePage() {
       >
         <Modal
           opened={infoModalOpen}
-          onClose={() => setInfoModalOpen(false)}
+          onClose={handleModalClose}
           title={currentStepData?.title}
           size="90rem"
           centered
           radius="lg"
           padding="xl"
+          closeOnClickOutside={!isFirstVisit || currentStep >= totalSteps - 1}
+          closeOnEscape={!isFirstVisit || currentStep >= totalSteps - 1}
+          withCloseButton={!isFirstVisit || currentStep >= totalSteps - 1}
           styles={{
             body: {
               minHeight: rem(640),
@@ -497,7 +565,7 @@ export default function HomePage() {
                     </Group>
                   </Button>
                 ) : (
-                  <Button size="sm" onClick={() => setInfoModalOpen(false)}>
+                  <Button size="sm" onClick={handleModalClose}>
                     <Group gap={8} wrap="nowrap" align="center">
                       <Text size="sm" fw={600}>
                         Get Started
