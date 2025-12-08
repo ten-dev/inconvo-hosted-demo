@@ -19,6 +19,7 @@ import {
   Card,
   Checkbox,
   Group,
+  Image,
   MantineProvider,
   Modal,
   Pagination,
@@ -211,36 +212,72 @@ export default function HomePage() {
     });
   }, []);
 
-  const demoSteps = [
+  type DemoSlide = {
+    title: string;
+    heading: string;
+    body: string[];
+    imageSrc: string;
+    imageAlt: string;
+  };
+
+  const demoSteps: DemoSlide[] = [
     {
-      title: "Welcome to Inconvo Demo",
-      content:
-        "This interactive demo showcases how Inconvo helps you build semantic models on top of your database. Navigate through these steps to understand the key features.",
+      title: "Slide 1: Your Store Platform",
+      heading: "A shared store platform with multiple organisations",
+      body: [
+        "This demo simulates three organisations (Apple, Tesla, and Logitech) each running their own store on the same platform.",
+        "Every organisation generates its own products, orders, users, and reviews.",
+      ],
+      imageSrc: "/slide1.png",
+      imageAlt: "Illustration representing three organisations sharing one store platform",
     },
     {
-      title: "Semantic Model View",
-      content:
-        "The top panel displays your semantic model configuration. Here you can see columns, computed columns, and relationships that define how your data connects and behaves.",
+      title: "Slide 2: Your Data Model",
+      heading: "A simple relational schema",
+      body: [
+        "Here is the data structure the agent understands: organisations at the top, connected to products, orders, users, and reviews.",
+        "Inconvo reads this schema to know how your data relates.",
+      ],
+      imageSrc: "/slide2.png",
+      imageAlt: "Diagram of the relational data model the demo is built on",
     },
     {
-      title: "Table Selector",
-      content:
-        "Use the segmented control below the title to switch between different tables in your database. Each table has its own semantic configuration.",
+      title: "Slide 3: Scoped by Organisation",
+      heading: "Choose an organisation to view its data",
+      body: [
+        "Select any organisation, and the chat will only answer using that organisation's data.",
+        "Everything you ask is automatically scoped to the selected tenant.",
+      ],
+      imageSrc: "/slide3.png",
+      imageAlt: "UI showing an organisation filter being applied",
     },
     {
-      title: "Live Data Preview",
-      content:
-        "The bottom panel shows real-time data from your selected table. This helps you verify that your semantic model correctly represents your actual data.",
+      title: "Slide 4: Questions to SQL",
+      heading: "Ask questions in natural language",
+      body: [
+        "Type a question, and Inconvo safely generates SQL based on your schema.",
+        "The agent runs the query and returns a clear, human-readable answer.",
+      ],
+      imageSrc: "/slide4.png",
+      imageAlt: "Visualization of a natural language question generating SQL and an answer",
     },
     {
-      title: "AI Assistant",
-      content:
-        "Ask questions about your data in natural language! The AI assistant understands your semantic model and can query your database to answer questions.",
+      title: "Slide 5: Powered by Inconvo",
+      heading: "Inconvo connects your data to AI, safely and reliably",
+      body: [
+        "Inconvo connects to your database, builds a semantic model, generates verified SQL, and logs every query.",
+        "Results flow through chat or API, powering both this demo and AI reporting inside your product.",
+      ],
+      imageSrc: "/slide5.png",
+      imageAlt: "Graphic representing the Inconvo platform powering AI reporting",
     },
   ];
 
   const totalSteps = demoSteps.length;
-  const currentStepData = demoSteps[currentStep];
+  const currentStepData =
+    totalSteps > 0
+      ? demoSteps[Math.min(currentStep, totalSteps - 1)]
+      : null;
 
   const selectedOrganisation = useMemo(() => {
     if (selectedOrganisationId === null) {
@@ -280,11 +317,59 @@ export default function HomePage() {
           opened={infoModalOpen}
           onClose={() => setInfoModalOpen(false)}
           title={currentStepData?.title}
-          size="xl"
+          size="90rem"
           centered
+          radius="lg"
+          padding="xl"
+          styles={{
+            body: {
+              minHeight: rem(640),
+            },
+          }}
         >
           <Stack gap="lg">
-            <Text size="sm">{currentStepData?.content}</Text>
+            {currentStepData ? (
+              <>
+                <Box
+                  style={{
+                    borderRadius: rem(12),
+                    overflow: "hidden",
+                    backgroundColor:
+                      "var(--mantine-color-gray-0, rgba(248, 249, 250, 1))",
+                  }}
+                >
+                  <Image
+                    src={currentStepData.imageSrc}
+                    alt={currentStepData.imageAlt}
+                    fit="contain"
+                    radius="md"
+                    h={rem(480)}
+                    w="100%"
+                    styles={{
+                      image: {
+                        objectPosition: "center",
+                      },
+                    }}
+                  />
+                </Box>
+                <Stack gap="xs">
+                  <Title order={4}>{currentStepData.heading}</Title>
+                  {currentStepData.body.map((paragraph, index) => (
+                    <Text
+                      key={`${currentStepData.title}-paragraph-${index}`}
+                      size="sm"
+                      c="dimmed"
+                    >
+                      {paragraph}
+                    </Text>
+                  ))}
+                </Stack>
+              </>
+            ) : (
+              <Text size="sm" c="dimmed">
+                Slide information is currently unavailable.
+              </Text>
+            )}
 
             <Group justify="space-between" align="center">
               <Text size="xs" c="dimmed">
