@@ -7,7 +7,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type CSSProperties,
   type ReactNode,
@@ -19,7 +18,6 @@ import {
   Button,
   Card,
   Checkbox,
-  Flex,
   Group,
   MantineProvider,
   Modal,
@@ -87,8 +85,6 @@ const getSectionSurfaceStyle = (
 });
 
 export default function HomePage() {
-  const [topHeight, setTopHeight] = useState(50); // percentage
-  const [isDragging, setIsDragging] = useState(false);
   const [focusedTableId, setFocusedTableId] = useState<string | null>(
     DEFAULT_TABLE_ID,
   );
@@ -104,43 +100,10 @@ export default function HomePage() {
     number | null
   >(null);
   const [threadResetKey, setThreadResetKey] = useState(0);
-  const containerRef = useRef<HTMLDivElement | null>(null);
   const selectedTable =
     focusedTableId && SEMANTIC_TABLE_MAP[focusedTableId]
       ? SEMANTIC_TABLE_MAP[focusedTableId]
       : null;
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging) return;
-
-    const container = containerRef.current;
-    if (!container) return;
-
-    const rect = container.getBoundingClientRect();
-    const newTopHeight = ((e.clientY - rect.top) / rect.height) * 100;
-
-    // Clamp between 20% and 80%
-    setTopHeight(Math.min(Math.max(newTopHeight, 20), 80));
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  const handleMouseDown = () => {
-    setIsDragging(true);
-  };
-
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
-      return () => {
-        document.removeEventListener("mousemove", handleMouseMove);
-        document.removeEventListener("mouseup", handleMouseUp);
-      };
-    }
-  }, [isDragging]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -353,15 +316,14 @@ export default function HomePage() {
           </Stack>
         </Modal>
 
-        <main className="bg-background text-foreground flex min-h-screen flex-col">
+        <main className="bg-background text-foreground flex min-h-screen flex-col pb-16">
           <Box
             component="section"
             style={{
-              height: "calc(100vh - 2rem)",
               width: "100%",
               maxWidth: "100%",
               paddingTop: rem(24),
-              paddingBottom: rem(24),
+              paddingBottom: rem(64),
               paddingLeft: rem(32),
               paddingRight: rem(32),
             }}
@@ -404,66 +366,14 @@ export default function HomePage() {
                 onSelect={(id) => setFocusedTableId(id)}
               />
             </Box>
-            <Flex
-              direction="column"
-              style={{ height: "100%", position: "relative" }}
-              ref={containerRef}
-            >
-              <Card
-                withBorder
-                shadow="sm"
-                radius="lg"
-                style={{
-                  height: `${topHeight}%`,
-                  overflow: "auto",
-                  marginBottom: 0,
-                }}
-              >
-                <SemanticTableView table={selectedTable} />
+            <Stack gap="lg" style={{ marginBottom: rem(64) }}>
+              <Card withBorder shadow="sm" radius="lg">
+                <ScrollArea h={rem(420)} offsetScrollbars>
+                  <SemanticTableView table={selectedTable} />
+                </ScrollArea>
               </Card>
 
-              <Box
-                style={{
-                  height: "8px",
-                  cursor: "ns-resize",
-                  backgroundColor: isDragging ? "#228be6" : "transparent",
-                  transition: isDragging ? "none" : "background-color 0.2s",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  position: "relative",
-                  zIndex: 10,
-                }}
-                onMouseDown={handleMouseDown}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#e7f5ff";
-                }}
-                onMouseLeave={(e) => {
-                  if (!isDragging) {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }
-                }}
-              >
-                <Box
-                  style={{
-                    width: "40px",
-                    height: "4px",
-                    backgroundColor: "#adb5bd",
-                    borderRadius: "2px",
-                  }}
-                />
-              </Box>
-
-              <Card
-                withBorder
-                shadow="sm"
-                radius="lg"
-                style={{
-                  height: `${100 - topHeight}%`,
-                  overflow: "auto",
-                  marginTop: 0,
-                }}
-              >
+              <Card withBorder shadow="sm" radius="lg">
                 <Group justify="space-between" align="center" mb="xs">
                   <Title order={6}>Database Viewer</Title>
                   {selectedOrganisationId !== null &&
@@ -476,9 +386,10 @@ export default function HomePage() {
                 <DatabaseViewer
                   activeTableId={focusedTableId}
                   organisationId={selectedOrganisationId}
+                  maxHeight={300}
                 />
               </Card>
-            </Flex>
+            </Stack>
           </Box>
         </main>
       </Assistant>
@@ -865,11 +776,13 @@ function DatabaseSelector({ activeTableId, onSelect }: DatabaseSelectorProps) {
 type DatabaseViewerProps = {
   activeTableId: string | null;
   organisationId: number | null;
+  maxHeight?: number;
 };
 
 function DatabaseViewer({
   activeTableId,
   organisationId,
+  maxHeight,
 }: DatabaseViewerProps) {
   const fallbackTableId = DEFAULT_TABLE_ID;
   const selectedTableId =
@@ -885,7 +798,7 @@ function DatabaseViewer({
   const hasViewerConfig = Boolean(selectedSemanticTable?.viewerColumns?.length);
 
   const [page, setPage] = useState(1);
-  const pageSize = 10;
+  const pageSize = 3;
   const [queryState, setQueryState] = useState<{
     status: "idle" | "loading" | "success" | "error";
     rows: Record<string, unknown>[];
@@ -1046,7 +959,13 @@ function DatabaseViewer({
             maxWidth: "100%",
           }}
         >
-          <ScrollArea h={rem(280)} offsetScrollbars style={{ width: "100%" }}>
+          <ScrollArea
+            offsetScrollbars
+            style={{
+              width: "100%",
+              maxHeight: maxHeight ? rem(maxHeight) : undefined,
+            }}
+          >
             <Table
               verticalSpacing={4}
               horizontalSpacing={6}
