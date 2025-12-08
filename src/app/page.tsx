@@ -160,9 +160,9 @@ export default function HomePage() {
         });
 
         if (!response.ok) {
-          const payload = (await response
-            .json()
-            .catch(() => ({ error: response.statusText }))) as OrganisationsApiResponse;
+          const payload = (await response.json().catch(() => ({
+            error: response.statusText,
+          }))) as OrganisationsApiResponse;
           throw new Error(
             typeof payload.error === "string"
               ? payload.error
@@ -276,7 +276,9 @@ export default function HomePage() {
     if (selectedOrganisationId === null) {
       return null;
     }
-    return organisations.find((org) => org.id === selectedOrganisationId) ?? null;
+    return (
+      organisations.find((org) => org.id === selectedOrganisationId) ?? null
+    );
   }, [organisations, selectedOrganisationId]);
 
   const organisationFilterLabel = useMemo(() => {
@@ -455,7 +457,7 @@ export default function HomePage() {
                 }}
               >
                 <Group justify="space-between" align="center" mb="xs">
-                  <Title order={6}>Example Data</Title>
+                  <Title order={6}>Database Viewer</Title>
                   {selectedOrganisationId !== null &&
                   selectedTable?.name !== "organisations" ? (
                     <Badge color="blue" variant="light">
@@ -703,9 +705,6 @@ function SemanticRelationsSection({
               <Table.Th style={{ width: rem(70) }}>On</Table.Th>
               <Table.Th>Name</Table.Th>
               <Table.Th style={{ width: rem(220) }}>Target Table</Table.Th>
-              <Table.Th style={{ width: rem(120), textAlign: "right" }}>
-                Actions
-              </Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -731,11 +730,6 @@ function SemanticRelationsSection({
                   <Text fz="xs">{relation.targetTable}</Text>
                   <Text fz="xs" c="dimmed">
                     {relation.isList ? "One-to-many" : "One-to-one"}
-                  </Text>
-                </Table.Td>
-                <Table.Td style={{ textAlign: "right" }}>
-                  <Text c="dimmed" fz="xs">
-                    —
                   </Text>
                 </Table.Td>
               </Table.Tr>
@@ -883,7 +877,7 @@ function DatabaseViewer({
   const hasViewerConfig = Boolean(selectedSemanticTable?.viewerColumns?.length);
 
   const [page, setPage] = useState(1);
-  const pageSize = 5;
+  const pageSize = 10;
   const [queryState, setQueryState] = useState<{
     status: "idle" | "loading" | "success" | "error";
     rows: Record<string, unknown>[];
