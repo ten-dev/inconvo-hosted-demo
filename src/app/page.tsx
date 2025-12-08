@@ -259,7 +259,7 @@ export default function HomePage() {
 
   const demoSteps: DemoSlide[] = [
     {
-      title: "Slide 1: Your Store Platform",
+      title: "The Demo Store Platform",
       heading: "A shared store platform with multiple organisations",
       body: [
         "This demo simulates three organisations (Apple, Tesla, and Logitech) each running their own store on the same platform.",
@@ -270,42 +270,42 @@ export default function HomePage() {
         "Illustration representing three organisations sharing one store platform",
     },
     {
-      title: "Slide 2: Your Data Model",
+      title: "The Data Model",
       heading: "A simple relational schema",
       body: [
-        "Here is the data structure the agent understands: organisations at the top, connected to products, orders, users, and reviews.",
-        "Inconvo reads this schema to know how your data relates.",
+        "Here is the database structure: organisations at the top, connected to products, orders, users, and reviews.",
+        "There's a variety of data types including text, numbers, and timestamps.",
       ],
       imageSrc: "/slide2.png",
       imageAlt: "Diagram of the relational data model the demo is built on",
     },
     {
-      title: "Slide 3: Scoped by Organisation",
-      heading: "Choose an organisation to view its data",
+      title: "Chat Scoped by Organisation",
+      heading: "Choose an organisation to chat with it's data",
       body: [
         "Select any organisation, and the chat will only answer using that organisation's data.",
-        "Everything you ask is automatically scoped to the selected tenant.",
+        "Everything you ask is automatically scoped to the selected tenant's data as if you were that customer of the platform.",
       ],
       imageSrc: "/slide3.png",
       imageAlt: "UI showing an organisation filter being applied",
     },
     {
-      title: "Slide 4: Questions to SQL",
+      title: "Questions to SQL",
       heading: "Ask questions in natural language",
       body: [
-        "Type a question, and Inconvo safely generates SQL based on your schema.",
-        "The agent runs the query and returns a clear, human-readable answer.",
+        "Type any question about the store's data, and Inconvo safely generates the necessary SQL.",
+        "The agent runs the query and returns a clear, human-readable answer — in text, chart or table format.",
       ],
       imageSrc: "/slide4.png",
       imageAlt:
         "Visualization of a natural language question generating SQL and an answer",
     },
     {
-      title: "Slide 5: Powered by Inconvo",
+      title: "Demo Agent — Powered by Inconvo",
       heading: "Inconvo connects your data to AI, safely and reliably",
       body: [
         "Inconvo connects to your database, builds a semantic model, generates verified SQL, and logs every query.",
-        "Results flow through chat or API, powering both this demo and AI reporting inside your product.",
+        "You can deploy via fully managed MCP or with directly through the API",
       ],
       imageSrc: "/slide5.png",
       imageAlt:
@@ -407,6 +407,10 @@ export default function HomePage() {
           styles={{
             body: {
               minHeight: rem(640),
+            },
+            title: {
+              fontSize: rem(24),
+              fontWeight: 700,
             },
           }}
         >
