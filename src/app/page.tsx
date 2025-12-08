@@ -103,6 +103,7 @@ export default function HomePage() {
   const [selectedOrganisationId, setSelectedOrganisationId] = useState<
     number | null
   >(null);
+  const [threadResetKey, setThreadResetKey] = useState(0);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const selectedTable =
     focusedTableId && SEMANTIC_TABLE_MAP[focusedTableId]
@@ -238,7 +239,13 @@ export default function HomePage() {
   }, [organisations]);
 
   const handleOrganisationChange = useCallback((value: number | null) => {
-    setSelectedOrganisationId(value);
+    setSelectedOrganisationId((current) => {
+      if (current === value) {
+        return current;
+      }
+      setThreadResetKey((prev) => prev + 1);
+      return value;
+    });
   }, []);
 
   const demoSteps = [
@@ -302,6 +309,7 @@ export default function HomePage() {
   return (
     <MantineProvider defaultColorScheme="light">
       <Assistant
+        key={`assistant-${threadResetKey}`}
         organisationId={selectedOrganisationId}
         organisationSelectorProps={organisationSelectorProps}
       >
@@ -533,8 +541,8 @@ function SemanticColumnsSection({
   computedColumns,
 }: SemanticColumnsSectionProps) {
   const rows: SemanticColumnRow[] = [
-    ...computedColumns.map((column) => ({ kind: "computed", column })),
-    ...columns.map((column) => ({ kind: "base", column })),
+    ...computedColumns.map((column) => ({ kind: "computed" as const, column })),
+    ...columns.map((column) => ({ kind: "base" as const, column })),
   ];
 
   return (

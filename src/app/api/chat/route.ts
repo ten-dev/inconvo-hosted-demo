@@ -49,9 +49,9 @@ export async function POST(req: Request) {
   const systemPrompt = typeof system === "string" ? system : undefined;
 
   const frontendToolConfig = frontendTools(
-    (tools && typeof tools === "object"
-      ? tools
-      : {}) as Parameters<typeof frontendTools>[0],
+    (tools && typeof tools === "object" ? tools : {}) as Parameters<
+      typeof frontendTools
+    >[0],
   );
 
   const organisationId =
