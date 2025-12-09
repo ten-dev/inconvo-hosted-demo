@@ -826,15 +826,21 @@ function SemanticColumnsSection({
                         </Box>
                       </Tooltip>
                       {row.kind === "computed" && (
-                        <ActionIcon
-                          variant="subtle"
-                          color="red"
-                          size="xs"
-                          radius="md"
-                          aria-label={`Remove computed column ${row.column.name}`}
-                        >
-                          <IconTrash size={12} />
-                        </ActionIcon>
+                        <Tooltip label="Remove computed column" withArrow>
+                          <Box component="span">
+                            <ActionIcon
+                              variant="subtle"
+                              color="red"
+                              size="xs"
+                              radius="md"
+                              disabled
+                              aria-label={`Remove computed column ${row.column.name}`}
+                              style={{ cursor: "not-allowed", opacity: 0.6 }}
+                            >
+                              <IconTrash size={12} />
+                            </ActionIcon>
+                          </Box>
+                        </Tooltip>
                       )}
                     </Group>
                   </Table.Td>

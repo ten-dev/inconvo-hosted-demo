@@ -48,7 +48,7 @@ export const InconvoStateContext = createContext<{
 }>({
   isLoading: false,
   conversationId: null,
-  clearConversation: () => {},
+  clearConversation: () => undefined,
   hasMessages: false,
 });
 

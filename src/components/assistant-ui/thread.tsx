@@ -128,11 +128,11 @@ const ThreadWelcome: FC<{
       <div className="aui-thread-welcome-center flex w-full grow flex-col items-center justify-center">
         <div className="aui-thread-welcome-message flex size-full flex-col justify-center px-8">
           <div className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-2 animate-in text-2xl font-semibold duration-300 ease-out">
-            Ask me anything about the store's data
+            Ask me anything about the store&rsquo;s data
           </div>
           <div className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-2 animate-in text-muted-foreground/65 text-2xl delay-100 duration-300 ease-out">
-            I'm connected to the database and scoped to the {organisationName}{" "}
-            organisation.
+            I&rsquo;m connected to the database and scoped to the{" "}
+            {organisationName} organisation.
           </div>
         </div>
       </div>
