@@ -2,8 +2,6 @@ import Inconvo from "@inconvoai/node";
 import type { ConversationCreateParams } from "@inconvoai/node/resources/conversations";
 import { NextResponse } from "next/server";
 
-export const runtime = "edge";
-
 const inconvo = new Inconvo({
   apiKey: process.env.INCONVO_API_KEY,
   baseURL:
