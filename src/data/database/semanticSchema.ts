@@ -39,65 +39,6 @@ export type SemanticTable = {
 
 export const SEMANTIC_TABLES: SemanticTable[] = [
   {
-    id: "tbl_organisations",
-    name: "organisations",
-    description:
-      "Top-level tenants that isolate data for each storefront in the demo environment.",
-    columns: [
-      { name: "id", type: "number" },
-      { name: "name", type: "string" },
-      { name: "created_at", type: "DateTime" },
-    ],
-    relations: [
-      { name: "products", isList: true, targetTable: "products" },
-      { name: "orders", isList: true, targetTable: "orders" },
-      { name: "reviews", isList: true, targetTable: "reviews" },
-      { name: "users", isList: true, targetTable: "users" },
-    ],
-    viewerColumns: [
-      { field: "id" },
-      { field: "name" },
-      { field: "created_at" },
-    ],
-  },
-  {
-    id: "tbl_products",
-    name: "products",
-    description:
-      "Catalog entries with merchandising metadata and stock levels.",
-    context: "Products are considered low stock when stock_level is below 20.",
-    columns: [
-      { name: "organisation_id", type: "number" },
-      { name: "id", type: "number" },
-      { name: "ean", type: "string" },
-      { name: "title", type: "string" },
-      { name: "category", type: "string" },
-      { name: "price", type: "number" },
-      { name: "stock_level", type: "number" },
-      { name: "created_at", type: "DateTime" },
-    ],
-    relations: [
-      {
-        name: "organisation",
-        isList: false,
-        targetTable: "organisations",
-        sourceColumns: ["organisation_id"],
-        targetColumns: ["id"],
-      },
-      { name: "orders", isList: true, targetTable: "orders" },
-      { name: "reviews", isList: true, targetTable: "reviews" },
-    ],
-    viewerColumns: [
-      { field: "id" },
-      { field: "organisation_id" },
-      { field: "title" },
-      { field: "category" },
-      { field: "price", unit: "USD" },
-      { field: "stock_level" },
-      { field: "created_at" },
-    ],
-  },
-  {
     id: "tbl_orders",
     name: "orders",
     description: "Transactional headers for all store purchases.",
@@ -152,6 +93,43 @@ export const SEMANTIC_TABLES: SemanticTable[] = [
       { field: "tax", unit: "USD" },
       { field: "discount", unit: "USD" },
       { field: "quantity" },
+      { field: "created_at" },
+    ],
+  },
+  {
+    id: "tbl_products",
+    name: "products",
+    description:
+      "Catalog entries with merchandising metadata and stock levels.",
+    context: "Products are considered low stock when stock_level is below 20.",
+    columns: [
+      { name: "organisation_id", type: "number" },
+      { name: "id", type: "number" },
+      { name: "ean", type: "string" },
+      { name: "title", type: "string" },
+      { name: "category", type: "string" },
+      { name: "price", type: "number" },
+      { name: "stock_level", type: "number" },
+      { name: "created_at", type: "DateTime" },
+    ],
+    relations: [
+      {
+        name: "organisation",
+        isList: false,
+        targetTable: "organisations",
+        sourceColumns: ["organisation_id"],
+        targetColumns: ["id"],
+      },
+      { name: "orders", isList: true, targetTable: "orders" },
+      { name: "reviews", isList: true, targetTable: "reviews" },
+    ],
+    viewerColumns: [
+      { field: "id" },
+      { field: "organisation_id" },
+      { field: "title" },
+      { field: "category" },
+      { field: "price", unit: "USD" },
+      { field: "stock_level" },
       { field: "created_at" },
     ],
   },
@@ -241,6 +219,28 @@ export const SEMANTIC_TABLES: SemanticTable[] = [
       { field: "city" },
       { field: "created_at" },
       { field: "last_order_at" },
+    ],
+  },
+  {
+    id: "tbl_organisations",
+    name: "organisations",
+    description:
+      "Top-level tenants that isolate data for each storefront in the demo environment.",
+    columns: [
+      { name: "id", type: "number" },
+      { name: "name", type: "string" },
+      { name: "created_at", type: "DateTime" },
+    ],
+    relations: [
+      { name: "products", isList: true, targetTable: "products" },
+      { name: "orders", isList: true, targetTable: "orders" },
+      { name: "reviews", isList: true, targetTable: "reviews" },
+      { name: "users", isList: true, targetTable: "users" },
+    ],
+    viewerColumns: [
+      { field: "id" },
+      { field: "name" },
+      { field: "created_at" },
     ],
   },
 ];
