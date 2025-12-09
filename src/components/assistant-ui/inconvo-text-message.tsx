@@ -29,7 +29,6 @@ export const InconvoTextMessage: TextMessagePartComponent = () => {
       posthog.capture("chart_rendered", {
         chart_type: parsed.chart.type,
         chart_title: parsed.chart.title,
-        data_points: parsed.chart.data?.length ?? 0,
       });
       trackedRef.current = trackingKey;
     } else if (parsed.type === "table" && parsed.table) {
@@ -60,9 +59,7 @@ export const InconvoTextMessage: TextMessagePartComponent = () => {
     return (
       <ResponseCard>
         <ResponseTitle title={parsed.chart.title ?? "Chart"} />
-        {parsed.message ? (
-          <ResponseBody>{parsed.message}</ResponseBody>
-        ) : null}
+        {parsed.message ? <ResponseBody>{parsed.message}</ResponseBody> : null}
         <InconvoChart
           data={parsed.chart.data}
           variant={parsed.chart.type}
@@ -89,9 +86,7 @@ export const InconvoTextMessage: TextMessagePartComponent = () => {
     return (
       <ResponseCard>
         <ResponseTitle title="Tabular result" />
-        {parsed.message ? (
-          <ResponseBody>{parsed.message}</ResponseBody>
-        ) : null}
+        {parsed.message ? <ResponseBody>{parsed.message}</ResponseBody> : null}
         <DataTable head={parsed.table.head} body={parsed.table.body} />
       </ResponseCard>
     );
