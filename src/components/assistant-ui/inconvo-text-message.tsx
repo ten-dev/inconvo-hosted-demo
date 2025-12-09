@@ -12,11 +12,13 @@ import { MarkdownText } from "~/components/assistant-ui/markdown-text";
 import { InconvoChart } from "~/components/assistant-ui/tools/inconvo-chart";
 import { DataTable } from "~/components/assistant-ui/tools/inconvo-data-table";
 import { parseInconvoResponse } from "~/lib/inconvo/types";
+import { cn } from "~/lib/utils";
 
 export const InconvoTextMessage: TextMessagePartComponent = () => {
   const { text, status } = useMessagePartText();
   const parsed = useMemo(() => parseInconvoResponse(text), [text]);
   const trackedRef = useRef<string | null>(null);
+  const isStreaming = status.type === "running";
 
   // Track chart or table rendering only once per unique response
   useEffect(() => {
@@ -40,14 +42,22 @@ export const InconvoTextMessage: TextMessagePartComponent = () => {
     }
   }, [parsed, status.type, text]);
 
+  const streamingClasses = isStreaming
+    ? "opacity-60 animate-pulse"
+    : "";
+
   if (!parsed) {
-    return <MarkdownText />;
+    return (
+      <div className={cn(streamingClasses)}>
+        <MarkdownText />
+      </div>
+    );
   }
 
   if (parsed.type === "chart") {
     if (!parsed.chart) {
       return (
-        <ResponseCard>
+        <ResponseCard className={streamingClasses}>
           <ResponseTitle title="Chart data unavailable" />
           <ResponseBody>
             Unable to display the chart payload returned by the assistant.
@@ -57,7 +67,7 @@ export const InconvoTextMessage: TextMessagePartComponent = () => {
     }
 
     return (
-      <ResponseCard>
+      <ResponseCard className={streamingClasses}>
         <ResponseTitle title={parsed.chart.title ?? "Chart"} />
         {parsed.message ? <ResponseBody>{parsed.message}</ResponseBody> : null}
         <InconvoChart
@@ -74,7 +84,7 @@ export const InconvoTextMessage: TextMessagePartComponent = () => {
   if (parsed.type === "table") {
     if (!parsed.table) {
       return (
-        <ResponseCard>
+        <ResponseCard className={streamingClasses}>
           <ResponseTitle title="Table data unavailable" />
           <ResponseBody>
             The assistant referenced a table but no data was provided.
@@ -84,7 +94,7 @@ export const InconvoTextMessage: TextMessagePartComponent = () => {
     }
 
     return (
-      <ResponseCard>
+      <ResponseCard className={streamingClasses}>
         <ResponseTitle title="Tabular result" />
         {parsed.message ? <ResponseBody>{parsed.message}</ResponseBody> : null}
         <DataTable head={parsed.table.head} body={parsed.table.body} />
@@ -98,13 +108,26 @@ export const InconvoTextMessage: TextMessagePartComponent = () => {
       text={renderedText}
       isRunning={status.type === "running"}
     >
-      <MarkdownText />
+      <div className={cn(streamingClasses)}>
+        <MarkdownText />
+      </div>
     </TextMessagePartProvider>
   );
 };
 
-const ResponseCard = ({ children }: { children: ReactNode }) => (
-  <div className="aui-inconvo-card mb-4 flex w-full flex-col gap-4 rounded-2xl border border-border bg-muted/50 px-5 py-4 text-sm dark:bg-muted/20">
+const ResponseCard = ({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) => (
+  <div
+    className={cn(
+      "aui-inconvo-card mb-4 flex w-full flex-col gap-4 rounded-2xl border border-border bg-muted/50 px-5 py-4 text-sm dark:bg-muted/20",
+      className
+    )}
+  >
     {children}
   </div>
 );
