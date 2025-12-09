@@ -51,7 +51,7 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
     >
       {organisationSelectorProps ? (
         <div className="aui-thread-organisation px-4 pt-4">
-          <div className="flex justify-end">
+          <div className="flex justify-start">
             <OrganisationSelector
               {...organisationSelectorProps}
               label="Organisation"
