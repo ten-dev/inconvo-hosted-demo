@@ -24,13 +24,13 @@ export function MobileLayout({ chatContent, dataContent }: MobileLayoutProps) {
         <TabButton
           active={activeTab === "chat"}
           onClick={() => setActiveTab("chat")}
-          icon={<MessageSquare className="size-5" />}
+          icon={<MessageSquare className="size-4" />}
           label="Chat"
         />
         <TabButton
           active={activeTab === "data"}
           onClick={() => setActiveTab("data")}
-          icon={<Database className="size-5" />}
+          icon={<Database className="size-4" />}
           label="Data"
         />
       </nav>

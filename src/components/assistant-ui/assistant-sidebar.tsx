@@ -22,6 +22,34 @@ export const AssistantSidebar: FC<AssistantSidebarProps> = ({
 }) => {
   const isMobile = useMediaQuery("(max-width: 639px)");
 
+  // During SSR and initial hydration, isMobile is undefined
+  // Render both layouts and use CSS to show/hide based on screen size
+  if (isMobile === undefined) {
+    return (
+      <>
+        {/* Mobile layout - hidden on sm and up */}
+        <div className="block h-full sm:hidden">
+          <MobileLayout
+            chatContent={
+              <Thread organisationSelectorProps={organisationSelectorProps} />
+            }
+            dataContent={children}
+          />
+        </div>
+        {/* Desktop layout - hidden below sm */}
+        <div className="hidden h-full sm:block">
+          <ResizablePanelGroup direction="horizontal">
+            <ResizablePanel defaultSize={60}>{children}</ResizablePanel>
+            <ResizableHandle />
+            <ResizablePanel defaultSize={40}>
+              <Thread organisationSelectorProps={organisationSelectorProps} />
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </div>
+      </>
+    );
+  }
+
   if (isMobile) {
     return (
       <MobileLayout
