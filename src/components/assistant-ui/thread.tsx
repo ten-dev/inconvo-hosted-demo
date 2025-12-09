@@ -6,7 +6,6 @@ import {
   ChevronRightIcon,
   CopyIcon,
   PencilIcon,
-  RefreshCwIcon,
   Square,
   PlusIcon,
 } from "lucide-react";
@@ -301,11 +300,6 @@ const AssistantActionBar: FC = () => {
           </MessagePrimitive.If>
         </TooltipIconButton>
       </ActionBarPrimitive.Copy>
-      <ActionBarPrimitive.Reload asChild>
-        <TooltipIconButton tooltip="Refresh">
-          <RefreshCwIcon />
-        </TooltipIconButton>
-      </ActionBarPrimitive.Reload>
     </ActionBarPrimitive.Root>
   );
 };
