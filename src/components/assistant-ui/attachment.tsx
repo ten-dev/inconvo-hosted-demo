@@ -52,8 +52,7 @@ const useAttachmentSrc = () => {
     useShallow(({ attachment }): { file?: File; src?: string } => {
       if (attachment.type !== "image") return {};
       if (attachment.file) return { file: attachment.file };
-      const src = attachment.content?.filter((c) => c.type === "image")[0]
-        ?.image;
+      const src = attachment.content?.find((c) => c.type === "image")?.image;
       if (!src) return {};
       return { src };
     }),
@@ -148,7 +147,7 @@ const AttachmentUI: FC = () => {
         return "File";
       default:
         const _exhaustiveCheck: never = type;
-        throw new Error(`Unknown attachment type: ${_exhaustiveCheck}`);
+        throw new Error(`Unknown attachment type: ${String(_exhaustiveCheck)}`);
     }
   });
 

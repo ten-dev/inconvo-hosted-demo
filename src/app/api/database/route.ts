@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { count, sql } from "drizzle-orm";
 
-import { DATABASE_TABLE_NAMES, type DatabaseTableName } from "~/data/database/tables";
+import { DATABASE_TABLE_NAMES } from "~/data/database/tables";
 import { db } from "~/server/db";
 import {
   organisations,
@@ -62,7 +62,7 @@ const buildParams = (req: NextRequest): QueryParams => {
   const url = new URL(req.url);
   const getParam = (key: string) => {
     const value = url.searchParams.get(key);
-    return value === null ? undefined : value;
+    return value ?? undefined;
   };
 
   const parsed = querySchema.safeParse({

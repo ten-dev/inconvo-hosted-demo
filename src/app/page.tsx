@@ -11,6 +11,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
+import NextImage from "next/image";
 import {
   ActionIcon,
   Badge,
@@ -19,6 +20,8 @@ import {
   Card,
   Checkbox,
   Group,
+  Image,
+  Kbd,
   MantineProvider,
   Modal,
   Pagination,
@@ -32,6 +35,7 @@ import {
   rem,
   Code,
 } from "@mantine/core";
+import { Notifications, notifications } from "@mantine/notifications";
 import {
   IconInfoCircle,
   IconNote,
@@ -54,8 +58,6 @@ import type {
   OrganisationOption,
   OrganisationSelectorProps,
 } from "~/components/organisation/organisation-selector";
-
-const DATABASE_VIEWER_TABLE_WIDTH = 900;
 
 const DEFAULT_TABLE_ID = SEMANTIC_TABLES[0]?.id ?? null;
 
@@ -84,12 +86,59 @@ const getSectionSurfaceStyle = (
   padding: options.padded ? rem(12) : undefined,
 });
 
+const ShortcutKeys = ({
+  keys,
+  tone = "muted",
+}: {
+  keys: string[];
+  tone?: "primary" | "muted";
+}) => (
+  <Group gap={4} wrap="nowrap" align="center">
+    {keys.map((key) => (
+      <Kbd
+        key={`${tone}-${key}`}
+        size="xs"
+        style={{
+          borderRadius: rem(6),
+          paddingInline: rem(8),
+          backgroundColor:
+            tone === "primary"
+              ? "rgba(255, 255, 255, 0.2)"
+              : "var(--mantine-color-gray-0, #f8f9fa)",
+          color:
+            tone === "primary"
+              ? "var(--mantine-color-white, #ffffff)"
+              : "var(--mantine-color-dark-6, #212529)",
+          borderColor:
+            tone === "primary"
+              ? "rgba(255, 255, 255, 0.6)"
+              : "var(--mantine-color-gray-3, #dee2e6)",
+          fontWeight: 600,
+        }}
+      >
+        {key}
+      </Kbd>
+    ))}
+  </Group>
+);
+
 export default function HomePage() {
   const [focusedTableId, setFocusedTableId] = useState<string | null>(
     DEFAULT_TABLE_ID,
   );
   const [infoModalOpen, setInfoModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [isFirstVisit, setIsFirstVisit] = useState(false);
+
+  // Auto-open modal on first visit
+  useEffect(() => {
+    const hasVisitedBefore = localStorage.getItem("inconvo-demo-visited");
+    if (!hasVisitedBefore) {
+      setInfoModalOpen(true);
+      setIsFirstVisit(true);
+      localStorage.setItem("inconvo-demo-visited", "true");
+    }
+  }, []);
   const [organisations, setOrganisations] = useState<OrganisationOption[]>([]);
   const [organisationStatus, setOrganisationStatus] =
     useState<OrganisationLoadState>("loading");
@@ -211,36 +260,179 @@ export default function HomePage() {
     });
   }, []);
 
-  const demoSteps = [
+  type DemoSlide = {
+    title: string;
+    heading: string;
+    body: string[];
+    imageSrc: string;
+    imageAlt: string;
+  };
+
+  const demoSteps: DemoSlide[] = [
     {
-      title: "Welcome to Inconvo Demo",
-      content:
-        "This interactive demo showcases how Inconvo helps you build semantic models on top of your database. Navigate through these steps to understand the key features.",
+      title: "The Demo Store",
+      heading: "A shared online store for multiple organisations",
+      body: [
+        "This demo simulates three organisations (Apple, Tesla, and Logitech) each running their own store on the same platform.",
+        "Every organisation generates its own products, orders, users, and reviews.",
+      ],
+      imageSrc: "/slide1.png",
+      imageAlt:
+        "Illustration representing three organisations sharing one store platform",
     },
     {
-      title: "Semantic Model View",
-      content:
-        "The top panel displays your semantic model configuration. Here you can see columns, computed columns, and relationships that define how your data connects and behaves.",
+      title: "The Data Model",
+      heading: "A simple relational schema",
+      body: [
+        "Here is the database structure: organisations at the top, connected to products, orders, users, and reviews.",
+        "There's a variety of data types including text, numbers, and timestamps.",
+      ],
+      imageSrc: "/slide2.png",
+      imageAlt: "Diagram of the relational data model the demo is built on",
     },
     {
-      title: "Table Selector",
-      content:
-        "Use the segmented control below the title to switch between different tables in your database. Each table has its own semantic configuration.",
+      title: "Chat Scoped by Organisation",
+      heading: "Choose an organisation to chat with it's data",
+      body: [
+        "Select any organisation, and the chat will only answer using that organisation's data.",
+        "Everything you ask is automatically scoped to the selected tenant's data as if you were that customer of the platform.",
+      ],
+      imageSrc: "/slide3.png",
+      imageAlt: "UI showing an organisation filter being applied",
     },
     {
-      title: "Live Data Preview",
-      content:
-        "The bottom panel shows real-time data from your selected table. This helps you verify that your semantic model correctly represents your actual data.",
+      title: "Questions to SQL",
+      heading: "Ask questions in natural language",
+      body: [
+        "Type any question about the store's data, and Inconvo safely generates the necessary SQL.",
+        "The agent runs the query and returns a clear, human-readable answer — in text, chart or table format.",
+      ],
+      imageSrc: "/slide4.png",
+      imageAlt:
+        "Visualization of a natural language question generating SQL and an answer",
     },
     {
-      title: "AI Assistant",
-      content:
-        "Ask questions about your data in natural language! The AI assistant understands your semantic model and can query your database to answer questions.",
+      title: "Demo Agent — Powered by Inconvo",
+      heading: "Inconvo connects your data to AI, safely and reliably",
+      body: [
+        "Inconvo connects to your database, builds a semantic model, generates verified SQL, and logs every query.",
+        "You can deploy via fully managed MCP or with directly through the API",
+      ],
+      imageSrc: "/slide5.png",
+      imageAlt:
+        "Graphic representing the Inconvo platform powering AI reporting",
     },
   ];
 
   const totalSteps = demoSteps.length;
-  const currentStepData = demoSteps[currentStep];
+  const currentStepData =
+    totalSteps > 0 ? demoSteps[Math.min(currentStep, totalSteps - 1)] : null;
+
+  const goToNextStep = useCallback(() => {
+    if (totalSteps === 0) {
+      return;
+    }
+    setCurrentStep((prev) => Math.min(prev + 1, totalSteps - 1));
+  }, [totalSteps]);
+
+  const goToPreviousStep = useCallback(() => {
+    if (totalSteps === 0) {
+      return;
+    }
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
+  }, [totalSteps]);
+
+  const handleModalClose = useCallback(() => {
+    // Only allow closing if it's not the first visit, or if they're on the last step
+    if (isFirstVisit && currentStep < totalSteps - 1) {
+      const remainingSlides = totalSteps - currentStep - 1;
+      notifications.show({
+        title: "Almost there!",
+        message: `Please view ${remainingSlides === 1 ? "the last slide" : `the remaining ${remainingSlides} slides`} before trying the demo.`,
+        color: "blue",
+        autoClose: 4000,
+      });
+      return;
+    }
+    setInfoModalOpen(false);
+  }, [isFirstVisit, currentStep, totalSteps]);
+
+  useEffect(() => {
+    if (!infoModalOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Handle Escape key
+      if (event.key === "Escape") {
+        if (isFirstVisit && currentStep < totalSteps - 1) {
+          event.preventDefault();
+          event.stopPropagation();
+          const remainingSlides = totalSteps - currentStep - 1;
+          notifications.show({
+            title: "Almost there!",
+            message: `Please view ${remainingSlides === 1 ? "the last slide" : `the remaining ${remainingSlides} slides`} to learn about the demo.`,
+            color: "blue",
+            autoClose: 4000,
+          });
+        }
+        return;
+      }
+
+      if (!event.metaKey) {
+        return;
+      }
+      if (event.key === "Enter") {
+        event.preventDefault();
+        if (currentStep >= totalSteps - 1) {
+          handleModalClose();
+        }
+        return;
+      }
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        goToNextStep();
+        return;
+      }
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        goToPreviousStep();
+      }
+    };
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      // Check if click is on the modal overlay
+      if (
+        isFirstVisit &&
+        currentStep < totalSteps - 1 &&
+        target.classList.contains("mantine-Modal-overlay")
+      ) {
+        const remainingSlides = totalSteps - currentStep - 1;
+        notifications.show({
+          title: "Almost there!",
+          message: `Please view ${remainingSlides === 1 ? "the last slide" : `the remaining ${remainingSlides} slides`} to learn about the demo.`,
+          color: "blue",
+          autoClose: 4000,
+        });
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("click", handleClickOutside);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("click", handleClickOutside);
+    };
+  }, [
+    currentStep,
+    goToNextStep,
+    goToPreviousStep,
+    handleModalClose,
+    infoModalOpen,
+    isFirstVisit,
+    totalSteps,
+  ]);
 
   const selectedOrganisation = useMemo(() => {
     if (selectedOrganisationId === null) {
@@ -271,6 +463,7 @@ export default function HomePage() {
 
   return (
     <MantineProvider defaultColorScheme="light">
+      <Notifications />
       <Assistant
         key={`assistant-${threadResetKey}`}
         organisationId={selectedOrganisationId}
@@ -278,37 +471,106 @@ export default function HomePage() {
       >
         <Modal
           opened={infoModalOpen}
-          onClose={() => setInfoModalOpen(false)}
+          onClose={handleModalClose}
           title={currentStepData?.title}
-          size="xl"
+          size="90rem"
           centered
+          radius="lg"
+          padding="xl"
+          closeOnClickOutside={!isFirstVisit || currentStep >= totalSteps - 1}
+          closeOnEscape={!isFirstVisit || currentStep >= totalSteps - 1}
+          withCloseButton={!isFirstVisit || currentStep >= totalSteps - 1}
+          styles={{
+            body: {
+              minHeight: rem(640),
+            },
+            title: {
+              fontSize: rem(24),
+              fontWeight: 700,
+            },
+          }}
         >
           <Stack gap="lg">
-            <Text size="sm">{currentStepData?.content}</Text>
+            {currentStepData ? (
+              <>
+                <Box
+                  style={{
+                    borderRadius: rem(12),
+                    overflow: "hidden",
+                    backgroundColor:
+                      "var(--mantine-color-gray-0, rgba(248, 249, 250, 1))",
+                  }}
+                >
+                  <Image
+                    src={currentStepData.imageSrc}
+                    alt={currentStepData.imageAlt}
+                    fit="contain"
+                    radius="md"
+                    h={rem(480)}
+                    w="100%"
+                    styles={{
+                      root: {
+                        objectPosition: "center",
+                      },
+                    }}
+                  />
+                </Box>
+                <Stack gap="xs">
+                  <Title order={4}>{currentStepData.heading}</Title>
+                  {currentStepData.body.map((paragraph, index) => (
+                    <Text
+                      key={`${currentStepData.title}-paragraph-${index}`}
+                      size="sm"
+                      c="dimmed"
+                    >
+                      {paragraph}
+                    </Text>
+                  ))}
+                </Stack>
+              </>
+            ) : (
+              <Text size="sm" c="dimmed">
+                Slide information is currently unavailable.
+              </Text>
+            )}
 
             <Group justify="space-between" align="center">
-              <Text size="xs" c="dimmed">
-                Step {currentStep + 1} of {totalSteps}
-              </Text>
+              <Stack gap={0} style={{ flexGrow: 1 }}>
+                <Text size="xs" c="dimmed">
+                  Slide {currentStep + 1} of {totalSteps}
+                </Text>
+              </Stack>
               <Group gap="xs">
                 <Button
                   variant="default"
                   size="sm"
                   disabled={currentStep === 0}
-                  onClick={() => setCurrentStep((prev) => prev - 1)}
+                  onClick={goToPreviousStep}
                 >
-                  Previous
+                  <Group gap={8} wrap="nowrap" align="center">
+                    <Text size="sm" fw={600}>
+                      Previous
+                    </Text>
+                    <ShortcutKeys keys={["⌘", "←"]} tone="muted" />
+                  </Group>
                 </Button>
                 {currentStep < totalSteps - 1 ? (
-                  <Button
-                    size="sm"
-                    onClick={() => setCurrentStep((prev) => prev + 1)}
-                  >
-                    Next
+                  <Button size="sm" onClick={goToNextStep}>
+                    <Group gap={8} wrap="nowrap" align="center">
+                      <Text size="sm" fw={600}>
+                        Next
+                      </Text>
+                      <ShortcutKeys keys={["⌘", "→"]} tone="primary" />
+                    </Group>
                   </Button>
                 ) : (
-                  <Button size="sm" onClick={() => setInfoModalOpen(false)}>
-                    Get Started
+                  <Button size="sm" onClick={handleModalClose}>
+                    <Group gap={8} wrap="nowrap" align="center">
+                      <Text size="sm" fw={600}>
+                        Get Started
+                      </Text>
+                      <ShortcutKeys keys={["⌘", "↵"]} tone="primary" />
+                    </Group>
                   </Button>
                 )}
               </Group>
@@ -330,8 +592,8 @@ export default function HomePage() {
           >
             <Box mb="md">
               <Group justify="space-between" align="flex-start" mb={rem(8)}>
-                <Group gap="sm" align="center">
-                  <img
+                <Group gap="sm" align="center" mb={rem(8)}>
+                  <NextImage
                     src="/logo.png"
                     alt="Inconvo Logo"
                     width={32}
@@ -852,32 +1114,52 @@ function DatabaseViewer({
       params.set("whereClause", whereClause);
     }
 
-    fetch(`/api/database?${params.toString()}`, {
-      signal: controller.signal,
-    })
-      .then(async (response) => {
-        if (response.ok) {
-          return response.json();
-        }
-        const payload = await response
+    const fetchRows = async () => {
+      try {
+        const response = await fetch(`/api/database?${params.toString()}`, {
+          signal: controller.signal,
+        });
+
+        const payload: unknown = await response
           .json()
           .catch(() => ({ error: response.statusText }));
-        throw new Error(
-          typeof payload.error === "string"
-            ? payload.error
-            : "Unable to fetch database table",
-        );
-      })
-      .then((payload) => {
+
+        if (!response.ok) {
+          const errorMessage =
+            isRecord(payload) && typeof payload.error === "string"
+              ? payload.error
+              : "Unable to fetch database table";
+          throw new Error(errorMessage);
+        }
+
+        if (!isRecord(payload)) {
+          throw new Error("Unexpected response format from database API");
+        }
+
+        const rowsPayload: Record<string, unknown>[] = Array.isArray(
+          payload.rows,
+        )
+          ? payload.rows.filter(isRecord)
+          : [];
+
+        const totalPagesValue =
+          typeof payload.totalPages === "number" && payload.totalPages > 0
+            ? payload.totalPages
+            : 1;
+
+        const totalCountValue =
+          typeof payload.totalCount === "number" && payload.totalCount >= 0
+            ? payload.totalCount
+            : 0;
+
         setQueryState({
           status: "success",
-          rows: Array.isArray(payload?.rows) ? payload.rows : [],
-          totalPages: payload?.totalPages ?? 1,
-          totalCount: payload?.totalCount ?? 0,
+          rows: rowsPayload,
+          totalPages: totalPagesValue,
+          totalCount: totalCountValue,
           error: undefined,
         });
-      })
-      .catch((error) => {
+      } catch (error) {
         if (error instanceof Error && error.name === "AbortError") {
           return;
         }
@@ -891,12 +1173,16 @@ function DatabaseViewer({
               ? error.message
               : "Unable to load table rows",
         });
-      });
+      }
+    };
+
+    void fetchRows();
 
     return () => controller.abort();
   }, [
     selectedSemanticTable?.id,
     selectedSemanticTable?.name,
+    selectedSemanticTable,
     hasViewerConfig,
     page,
     pageSize,
@@ -953,12 +1239,7 @@ function DatabaseViewer({
           <Text fz="sm">No rows available yet.</Text>
         </Card>
       ) : (
-        <Box
-          style={{
-            width: `${DATABASE_VIEWER_TABLE_WIDTH}px`,
-            maxWidth: "100%",
-          }}
-        >
+        <Box style={{ width: "100%" }}>
           <ScrollArea
             offsetScrollbars
             style={{
@@ -1045,7 +1326,10 @@ function formatCellValue(
   }
 
   if (typeof value === "number") {
-    return String(value);
+    const formatted = Number.isInteger(value)
+      ? value.toLocaleString()
+      : value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    return column?.unit ? `${formatted} ${column.unit}` : formatted;
   }
 
   if (typeof value === "string") {
@@ -1059,5 +1343,29 @@ function formatCellValue(
     return value;
   }
 
-  return String(value);
+  if (value instanceof Date) {
+    return value.toLocaleString();
+  }
+
+  if (typeof value === "object") {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return "[unserializable]";
+    }
+  }
+
+  if (typeof value === "bigint") {
+    return value.toString();
+  }
+
+  if (typeof value === "symbol") {
+    return value.description ? `Symbol(${value.description})` : "Symbol()";
+  }
+
+  if (typeof value === "function") {
+    return value.name ? `[fn ${value.name}]` : "[fn]";
+  }
+
+  return "";
 }

@@ -234,7 +234,7 @@ export const SEMANTIC_TABLES: SemanticTable[] = [
       },
     ],
     viewerColumns: [
-      { field: "id", label: "customer_id" },
+      { field: "id" },
       { field: "organisation_id" },
       { field: "name" },
       { field: "email" },
