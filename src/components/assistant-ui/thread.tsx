@@ -8,6 +8,7 @@ import {
   PencilIcon,
   RefreshCwIcon,
   Square,
+  PlusIcon,
 } from "lucide-react";
 
 import {
@@ -36,12 +37,15 @@ import {
   OrganisationSelector,
   type OrganisationSelectorProps,
 } from "~/components/organisation/organisation-selector";
+import { useInconvoState } from "~/app/InconvoRuntimeProvider";
 
 type ThreadProps = {
   organisationSelectorProps?: OrganisationSelectorProps;
 };
 
 export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
+  const { clearConversation } = useInconvoState();
+
   return (
     <ThreadPrimitive.Root
       className="aui-root aui-thread-root bg-background @container flex h-full flex-col"
@@ -51,11 +55,20 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
     >
       {organisationSelectorProps ? (
         <div className="aui-thread-organisation px-4 pt-4">
-          <div className="flex justify-start">
+          <div className="flex justify-between items-center gap-2">
             <OrganisationSelector
               {...organisationSelectorProps}
               label="Organisation"
             />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearConversation}
+              className="flex items-center gap-2"
+            >
+              <PlusIcon className="size-4" />
+              New Thread
+            </Button>
           </div>
         </div>
       ) : null}
