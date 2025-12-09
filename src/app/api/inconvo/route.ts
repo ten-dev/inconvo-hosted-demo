@@ -1,9 +1,6 @@
 import Inconvo from "@inconvoai/node";
 import { NextResponse } from "next/server";
 
-export const runtime = "edge";
-export const maxDuration = 30;
-
 const inconvo = new Inconvo({
   apiKey: process.env.INCONVO_API_KEY,
   baseURL:
