@@ -43,7 +43,7 @@ export const InconvoTextMessage: TextMessagePartComponent = () => {
   }, [parsed, status.type, text]);
 
   const streamingClasses = isStreaming
-    ? "opacity-60 animate-pulse"
+    ? "animate-pulse-fast"
     : "";
 
   if (!parsed) {
