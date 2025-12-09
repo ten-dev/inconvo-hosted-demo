@@ -43,9 +43,13 @@ const generateId = () =>
 export const InconvoStateContext = createContext<{
   isLoading: boolean;
   conversationId: string | null;
+  clearConversation: () => void;
+  hasMessages: boolean;
 }>({
   isLoading: false,
   conversationId: null,
+  clearConversation: () => undefined,
+  hasMessages: false,
 });
 
 export const useInconvoState = () => useContext(InconvoStateContext);
@@ -321,7 +325,7 @@ export function InconvoRuntimeProvider({
       const textPayload =
         message.role === "user"
           ? message.content?.type === "text" &&
-              typeof message.content.message === "string"
+            typeof message.content.message === "string"
             ? message.content.message
             : JSON.stringify(message.content)
           : JSON.stringify(message.content);
@@ -344,11 +348,15 @@ export function InconvoRuntimeProvider({
 
   const runtime = useExternalStoreRuntime(adapter);
 
+  const hasMessages = messages.length > 0;
+
   return (
     <InconvoStateContext.Provider
       value={{
         isLoading,
         conversationId,
+        clearConversation,
+        hasMessages,
       }}
     >
       <AssistantRuntimeProvider runtime={runtime}>

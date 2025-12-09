@@ -36,6 +36,7 @@ import {
   Code,
 } from "@mantine/core";
 import { Notifications, notifications } from "@mantine/notifications";
+import { ModalsProvider } from "@mantine/modals";
 import {
   IconInfoCircle,
   IconNote,
@@ -463,12 +464,13 @@ export default function HomePage() {
 
   return (
     <MantineProvider defaultColorScheme="light">
-      <Notifications />
-      <Assistant
-        key={`assistant-${threadResetKey}`}
-        organisationId={selectedOrganisationId}
-        organisationSelectorProps={organisationSelectorProps}
-      >
+      <ModalsProvider>
+        <Notifications />
+        <Assistant
+          key={`assistant-${threadResetKey}`}
+          organisationId={selectedOrganisationId}
+          organisationSelectorProps={organisationSelectorProps}
+        >
         <Modal
           opened={infoModalOpen}
           onClose={handleModalClose}
@@ -655,6 +657,7 @@ export default function HomePage() {
           </Box>
         </main>
       </Assistant>
+      </ModalsProvider>
     </MantineProvider>
   );
 }
@@ -823,15 +826,21 @@ function SemanticColumnsSection({
                         </Box>
                       </Tooltip>
                       {row.kind === "computed" && (
-                        <ActionIcon
-                          variant="subtle"
-                          color="red"
-                          size="xs"
-                          radius="md"
-                          aria-label={`Remove computed column ${row.column.name}`}
-                        >
-                          <IconTrash size={12} />
-                        </ActionIcon>
+                        <Tooltip label="Remove computed column" withArrow>
+                          <Box component="span">
+                            <ActionIcon
+                              variant="subtle"
+                              color="red"
+                              size="xs"
+                              radius="md"
+                              disabled
+                              aria-label={`Remove computed column ${row.column.name}`}
+                              style={{ cursor: "not-allowed", opacity: 0.6 }}
+                            >
+                              <IconTrash size={12} />
+                            </ActionIcon>
+                          </Box>
+                        </Tooltip>
                       )}
                     </Group>
                   </Table.Td>
