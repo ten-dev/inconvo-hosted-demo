@@ -55,7 +55,7 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
     >
       {organisationSelectorProps ? (
         <div className="aui-thread-organisation px-4 pt-4">
-          <div className="flex justify-between items-center gap-2">
+          <div className="flex items-center justify-between gap-2">
             <OrganisationSelector
               {...organisationSelectorProps}
               label="Organisation"
@@ -78,7 +78,7 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
         className="aui-thread-viewport relative flex flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth px-4 pt-4"
       >
         <ThreadPrimitive.If empty>
-          <ThreadWelcome />
+          <ThreadWelcome organisationSelectorProps={organisationSelectorProps} />
         </ThreadPrimitive.If>
 
         <ThreadPrimitive.Messages
@@ -112,16 +112,22 @@ const ThreadScrollToBottom: FC = () => {
   );
 };
 
-const ThreadWelcome: FC = () => {
+const ThreadWelcome: FC<{ organisationSelectorProps?: OrganisationSelectorProps }> = ({ organisationSelectorProps }) => {
+  const selectedOrganisation = organisationSelectorProps?.options.find(
+    org => org.id === organisationSelectorProps.value
+  );
+
+  const organisationName = selectedOrganisation?.name ?? "this organisation";
+
   return (
     <div className="aui-thread-welcome-root mx-auto my-auto flex w-full max-w-(--thread-max-width) grow flex-col">
       <div className="aui-thread-welcome-center flex w-full grow flex-col items-center justify-center">
         <div className="aui-thread-welcome-message flex size-full flex-col justify-center px-8">
           <div className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-2 animate-in text-2xl font-semibold duration-300 ease-out">
-            Hello there!
+            Ask me anything about the store's data
           </div>
           <div className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-2 animate-in text-muted-foreground/65 text-2xl delay-100 duration-300 ease-out">
-            How can I help you answer questions about the connected data today?
+            I'm connected to the database and scoped to {organisationName}.
           </div>
         </div>
       </div>
