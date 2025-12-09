@@ -1,15 +1,9 @@
-import { FlatCompat } from "@eslint/eslintrc";
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
 import tseslint from "typescript-eslint";
 
-const compat = new FlatCompat({
-  baseDirectory: import.meta.dirname,
-});
-
-export default tseslint.config(
-  {
-    ignores: [".next"],
-  },
-  ...compat.extends("next/core-web-vitals"),
+export default defineConfig([
+  ...nextVitals,
   {
     files: ["**/*.ts", "**/*.tsx"],
     extends: [
@@ -19,6 +13,7 @@ export default tseslint.config(
     ],
     rules: {
       "@typescript-eslint/array-type": "off",
+      //"@typescript-eslint/no-deprecated": "warn",
       "@typescript-eslint/consistent-type-definitions": "off",
       "@typescript-eslint/consistent-type-imports": [
         "warn",
@@ -26,7 +21,11 @@ export default tseslint.config(
       ],
       "@typescript-eslint/no-unused-vars": [
         "warn",
-        { argsIgnorePattern: "^_" },
+        {
+          argsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          ignoreRestSiblings: true,
+        },
       ],
       "@typescript-eslint/require-await": "off",
       "@typescript-eslint/no-misused-promises": [
@@ -45,4 +44,15 @@ export default tseslint.config(
       },
     },
   },
-);
+  globalIgnores([
+    ".next/**",
+    ".open-next/**",
+    "./wrangler/**",
+    "out/**",
+    "cloudflare-env.d.ts",
+    "build/**",
+    "next-env.d.ts",
+    "tempFiles/**",
+    "evals/**",
+  ]),
+]);
