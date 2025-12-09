@@ -60,7 +60,7 @@ export const DataTable = ({ head, body }: DataTableProps) => {
           header,
           cell: (info) => info.getValue(),
         })),
-    [head, hiddenColumns],
+    [head, hiddenColumns]
   );
 
   const table = useReactTable({
@@ -129,7 +129,7 @@ export const DataTable = ({ head, body }: DataTableProps) => {
                           "flex h-4 w-4 items-center justify-center rounded border text-[0.6rem] font-bold transition",
                           isVisible
                             ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border text-transparent",
+                            : "border-border text-transparent"
                         )}
                       >
                         ✓
@@ -168,13 +168,13 @@ export const DataTable = ({ head, body }: DataTableProps) => {
                         onClick={header.column.getToggleSortingHandler()}
                         className={cn(
                           "px-4 py-3 text-left font-semibold text-muted-foreground",
-                          header.column.getCanSort() && "cursor-pointer",
+                          header.column.getCanSort() && "cursor-pointer"
                         )}
                       >
                         <span className="inline-flex items-center gap-2">
                           {flexRender(
                             header.column.columnDef.header,
-                            header.getContext(),
+                            header.getContext()
                           )}
                           {isSorted ? (
                             <span className="text-xs">
@@ -195,8 +195,14 @@ export const DataTable = ({ head, body }: DataTableProps) => {
                   className="border-b border-border last:border-0 hover:bg-muted/40"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-4 py-3 text-sm text-foreground">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    <td
+                      key={cell.id}
+                      className="px-4 py-3 text-sm text-foreground"
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </td>
                   ))}
                 </tr>
