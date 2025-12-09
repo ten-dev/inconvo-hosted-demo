@@ -142,3 +142,12 @@
     }
   }
 }
+
+/* Handle virtual keyboard on mobile - ensure input stays visible */
+@supports (height: 100dvh) {
+  @media (max-width: 639px) {
+    html, body {
+      height: 100dvh;
+    }
+  }
+}

@@ -127,7 +127,7 @@ const ThreadWelcome: FC<{
   const organisationName = selectedOrganisation?.name ?? "this organisation";
 
   return (
-    <div className="aui-thread-welcome-root mx-auto my-auto flex w-full max-w-(--thread-max-width) grow flex-col">
+    <div className="aui-thread-welcome-root mx-auto my-auto hidden w-full max-w-(--thread-max-width) grow flex-col sm:flex">
       <div className="aui-thread-welcome-center flex w-full grow flex-col items-center justify-center">
         <div className="aui-thread-welcome-message flex size-full flex-col justify-center px-8">
           <div className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-2 animate-in text-2xl font-semibold duration-300 ease-out">
@@ -195,8 +195,25 @@ const ThreadSuggestions: FC = () => {
 };
 
 const Composer: FC = () => {
+  const handleSubmit = () => {
+    // Blur the active element to dismiss mobile keyboard after sending
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+  };
+
+  const handleFocus = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+    // Scroll input into view when focused (helps with mobile virtual keyboard)
+    setTimeout(() => {
+      e.target.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 300);
+  };
+
   return (
-    <ComposerPrimitive.Root className="aui-composer-root relative flex w-full flex-col">
+    <ComposerPrimitive.Root
+      className="aui-composer-root relative flex w-full flex-col"
+      onSubmit={handleSubmit}
+    >
       <ComposerPrimitive.AttachmentDropzone className="aui-composer-attachment-dropzone border-input bg-background has-[textarea:focus-visible]:border-ring has-[textarea:focus-visible]:ring-ring/50 data-[dragging=true]:border-ring data-[dragging=true]:bg-accent/50 dark:bg-background flex w-full flex-col rounded-3xl border px-1 pt-2 shadow-xs transition-[color,box-shadow] outline-none has-[textarea:focus-visible]:ring-[3px] data-[dragging=true]:border-dashed">
         <ComposerAttachments />
         <ComposerPrimitive.Input
@@ -205,6 +222,7 @@ const Composer: FC = () => {
           rows={1}
           autoFocus
           aria-label="Message input"
+          onFocus={handleFocus}
         />
         <ComposerAction />
       </ComposerPrimitive.AttachmentDropzone>

@@ -33,7 +33,6 @@ export const AssistantSidebar: FC<AssistantSidebarProps> = ({
             chatContent={
               <Thread organisationSelectorProps={organisationSelectorProps} />
             }
-            dataContent={children}
           />
         </div>
         {/* Desktop layout - hidden below sm */}
@@ -56,7 +55,6 @@ export const AssistantSidebar: FC<AssistantSidebarProps> = ({
         chatContent={
           <Thread organisationSelectorProps={organisationSelectorProps} />
         }
-        dataContent={children}
       />
     );
   }
