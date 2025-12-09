@@ -5,7 +5,8 @@ import {
   useMessagePartText,
   type TextMessagePartComponent,
 } from "@assistant-ui/react";
-import { useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
+import posthog from "posthog-js";
 
 import { MarkdownText } from "~/components/assistant-ui/markdown-text";
 import { InconvoChart } from "~/components/assistant-ui/tools/inconvo-chart";
@@ -15,6 +16,30 @@ import { parseInconvoResponse } from "~/lib/inconvo/types";
 export const InconvoTextMessage: TextMessagePartComponent = () => {
   const { text, status } = useMessagePartText();
   const parsed = useMemo(() => parseInconvoResponse(text), [text]);
+  const trackedRef = useRef<string | null>(null);
+
+  // Track chart or table rendering only once per unique response
+  useEffect(() => {
+    if (status.type === "running" || !parsed) return;
+
+    const trackingKey = `${parsed.type}-${text.slice(0, 100)}`;
+    if (trackedRef.current === trackingKey) return;
+
+    if (parsed.type === "chart" && parsed.chart) {
+      posthog.capture("chart_rendered", {
+        chart_type: parsed.chart.type,
+        chart_title: parsed.chart.title,
+        data_points: parsed.chart.data?.length ?? 0,
+      });
+      trackedRef.current = trackingKey;
+    } else if (parsed.type === "table" && parsed.table) {
+      posthog.capture("table_rendered", {
+        column_count: parsed.table.head?.length ?? 0,
+        row_count: parsed.table.body?.length ?? 0,
+      });
+      trackedRef.current = trackingKey;
+    }
+  }, [parsed, status.type, text]);
 
   if (!parsed) {
     return <MarkdownText />;

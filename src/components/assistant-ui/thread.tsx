@@ -19,6 +19,7 @@ import {
   MessagePrimitive,
   ThreadPrimitive,
 } from "@assistant-ui/react";
+import posthog from "posthog-js";
 
 import type { FC } from "react";
 
@@ -63,7 +64,10 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
             <Button
               variant="outline"
               size="sm"
-              onClick={clearConversation}
+              onClick={() => {
+                clearConversation();
+                posthog.capture("new_thread_clicked");
+              }}
               className="flex items-center gap-2"
             >
               <PlusIcon className="size-4" />
@@ -170,6 +174,12 @@ const ThreadSuggestions: FC = () => {
               variant="ghost"
               className="aui-thread-welcome-suggestion dark:hover:bg-accent/60 h-auto w-full flex-1 flex-wrap items-start justify-start gap-1 rounded-3xl border px-5 py-4 text-left text-sm @md:flex-col"
               aria-label={suggestedAction.action}
+              onClick={() => {
+                posthog.capture("suggestion_clicked", {
+                  suggestion_title: suggestedAction.title,
+                  suggestion_action: suggestedAction.action,
+                });
+              }}
             >
               <span className="aui-thread-welcome-suggestion-text-1 font-medium">
                 {suggestedAction.title}

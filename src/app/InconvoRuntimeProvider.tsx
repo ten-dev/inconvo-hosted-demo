@@ -15,6 +15,7 @@ import {
   useRef,
   useState,
 } from "react";
+import posthog from "posthog-js";
 import type {
   ConversationCreateResponse,
   ResponseCreateResponse,
@@ -93,6 +94,7 @@ export function InconvoRuntimeProvider({
   );
 
   const clearConversation = useCallback(() => {
+    const previousConversationId = conversationIdRef.current;
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
     conversationIdRef.current = null;
@@ -100,6 +102,12 @@ export function InconvoRuntimeProvider({
     setMessageState([]);
     setIsRunning(false);
     setIsLoading(false);
+    // Track conversation cleared event
+    if (previousConversationId) {
+      posthog.capture("conversation_cleared", {
+        conversation_id: previousConversationId,
+      });
+    }
   }, []);
 
   useEffect(() => {
@@ -139,6 +147,11 @@ export function InconvoRuntimeProvider({
 
       conversationIdRef.current = data.id;
       setConversationId(data.id);
+      // Track conversation created event
+      posthog.capture("conversation_created", {
+        conversation_id: data.id,
+        organisation_id: scopedOrganisationId,
+      });
       return data.id;
     } finally {
       setIsLoading(false);
@@ -277,10 +290,28 @@ export function InconvoRuntimeProvider({
 
       setMessageState((prev) => [...prev, userMessage, assistantMessage]);
 
+      // Track message sent event
+      posthog.capture("message_sent", {
+        conversation_id: conversationIdRef.current,
+        message_id: userMessage.id,
+        message_length: text.length,
+      });
+
       try {
         await streamResponse(text, assistantMessage.id);
+        // Track response received event
+        posthog.capture("response_received", {
+          conversation_id: conversationIdRef.current,
+          message_id: assistantMessage.id,
+        });
       } catch (error) {
         console.error("Inconvo streaming error:", error);
+        // Track response error event
+        posthog.capture("response_error", {
+          conversation_id: conversationIdRef.current,
+          error_message: error instanceof Error ? error.message : "Unknown error",
+        });
+        posthog.captureException(error);
         setMessageState((prev) =>
           prev.map((msg) =>
             msg.id === assistantMessage.id
