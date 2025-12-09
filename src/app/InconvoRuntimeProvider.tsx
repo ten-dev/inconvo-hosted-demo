@@ -43,11 +43,9 @@ const generateId = () =>
 export const InconvoStateContext = createContext<{
   isLoading: boolean;
   conversationId: string | null;
-  clearConversation: () => void;
 }>({
   isLoading: false,
   conversationId: null,
-  clearConversation: () => {},
 });
 
 export const useInconvoState = () => useContext(InconvoStateContext);
@@ -351,7 +349,6 @@ export function InconvoRuntimeProvider({
       value={{
         isLoading,
         conversationId,
-        clearConversation,
       }}
     >
       <AssistantRuntimeProvider runtime={runtime}>
