@@ -44,10 +44,12 @@ export const InconvoStateContext = createContext<{
   isLoading: boolean;
   conversationId: string | null;
   clearConversation: () => void;
+  hasMessages: boolean;
 }>({
   isLoading: false,
   conversationId: null,
   clearConversation: () => {},
+  hasMessages: false,
 });
 
 export const useInconvoState = () => useContext(InconvoStateContext);
@@ -346,12 +348,15 @@ export function InconvoRuntimeProvider({
 
   const runtime = useExternalStoreRuntime(adapter);
 
+  const hasMessages = messages.length > 0;
+
   return (
     <InconvoStateContext.Provider
       value={{
         isLoading,
         conversationId,
         clearConversation,
+        hasMessages,
       }}
     >
       <AssistantRuntimeProvider runtime={runtime}>

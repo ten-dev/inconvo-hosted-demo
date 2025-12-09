@@ -36,6 +36,7 @@ import {
   Code,
 } from "@mantine/core";
 import { Notifications, notifications } from "@mantine/notifications";
+import { ModalsProvider } from "@mantine/modals";
 import {
   IconInfoCircle,
   IconNote,
@@ -463,12 +464,13 @@ export default function HomePage() {
 
   return (
     <MantineProvider defaultColorScheme="light">
-      <Notifications />
-      <Assistant
-        key={`assistant-${threadResetKey}`}
-        organisationId={selectedOrganisationId}
-        organisationSelectorProps={organisationSelectorProps}
-      >
+      <ModalsProvider>
+        <Notifications />
+        <Assistant
+          key={`assistant-${threadResetKey}`}
+          organisationId={selectedOrganisationId}
+          organisationSelectorProps={organisationSelectorProps}
+        >
         <Modal
           opened={infoModalOpen}
           onClose={handleModalClose}
@@ -655,6 +657,7 @@ export default function HomePage() {
           </Box>
         </main>
       </Assistant>
+      </ModalsProvider>
     </MantineProvider>
   );
 }
