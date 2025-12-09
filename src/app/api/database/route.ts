@@ -3,7 +3,7 @@ import { z } from "zod";
 import { count, sql } from "drizzle-orm";
 
 import { DATABASE_TABLE_NAMES } from "~/data/database/tables";
-import { db } from "~/server/db";
+import { getDb } from "~/server/db";
 import {
   organisations,
   users,
@@ -85,6 +85,7 @@ const runQuery = async ({
   pageSize,
   whereClause,
 }: QueryParams): Promise<DatabaseResponse> => {
+  const db = getDb();
   const tableDef = TABLE_MAP[table];
   const offset = (page - 1) * pageSize;
 

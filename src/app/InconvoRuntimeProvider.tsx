@@ -57,7 +57,7 @@ export const useInconvoState = () => useContext(InconvoStateContext);
 const extractTextContent = (message: AppendMessage): string => {
   const textPart = message.content.find(
     (part): part is { type: "text"; text: string } =>
-      part.type === "text" && typeof part.text === "string",
+      part.type === "text" && typeof part.text === "string"
   );
   return textPart?.text?.trim() ?? "";
 };
@@ -89,7 +89,7 @@ export function InconvoRuntimeProvider({
 
   const scopedOrganisationId = useMemo(
     () => toScopedOrganisationId(organisationId),
-    [organisationId],
+    [organisationId]
   );
 
   const clearConversation = useCallback(() => {
@@ -132,7 +132,7 @@ export function InconvoRuntimeProvider({
         throw new Error("Failed to create conversation");
       }
 
-      const data = (await response.json()) as ConversationCreateResponse;
+      const data: ConversationCreateResponse = await response.json();
       if (!data?.id) {
         throw new Error("Invalid conversation response");
       }
@@ -204,8 +204,8 @@ export function InconvoRuntimeProvider({
                         ...msg,
                         content: { type: "text", message: event.message },
                       }
-                    : msg,
-                ),
+                    : msg
+                )
               );
             } else if (event.type === "response.completed") {
               const nextConversationId =
@@ -222,8 +222,8 @@ export function InconvoRuntimeProvider({
                         id: event.response.id ?? msg.id,
                         content: event.response,
                       }
-                    : msg,
-                ),
+                    : msg
+                )
               );
             }
           }
@@ -237,7 +237,7 @@ export function InconvoRuntimeProvider({
         abortControllerRef.current = null;
       }
     },
-    [],
+    []
   );
 
   const onNew = useCallback(
@@ -292,14 +292,14 @@ export function InconvoRuntimeProvider({
                       "Sorry, something went wrong while fetching the response.",
                   },
                 }
-              : msg,
-          ),
+              : msg
+          )
         );
       } finally {
         setIsRunning(false);
       }
     },
-    [createConversationIfNeeded, streamResponse],
+    [createConversationIfNeeded, streamResponse]
   );
 
   const onCancel = useCallback(async () => {
@@ -313,7 +313,7 @@ export function InconvoRuntimeProvider({
     (nextMessages: readonly InconvoMessage[]) => {
       setMessageState([...nextMessages]);
     },
-    [],
+    []
   );
 
   const adapter: ExternalStoreAdapter<InconvoMessage> = {
@@ -325,7 +325,7 @@ export function InconvoRuntimeProvider({
       const textPayload =
         message.role === "user"
           ? message.content?.type === "text" &&
-              typeof message.content.message === "string"
+            typeof message.content.message === "string"
             ? message.content.message
             : JSON.stringify(message.content)
           : JSON.stringify(message.content);

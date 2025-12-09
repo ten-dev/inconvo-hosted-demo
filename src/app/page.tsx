@@ -184,7 +184,7 @@ export default function HomePage() {
           );
         }
 
-        const payload = (await response.json()) as OrganisationsApiResponse;
+        const payload: OrganisationsApiResponse = await response.json();
         const rows = Array.isArray(payload.rows) ? payload.rows : [];
         const options = rows
           .map((row) => {

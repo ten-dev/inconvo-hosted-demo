@@ -1,9 +1,6 @@
 import Inconvo from "@inconvoai/node";
 import { NextResponse } from "next/server";
 
-export const runtime = "edge";
-export const maxDuration = 30;
-
 const inconvo = new Inconvo({
   apiKey: process.env.INCONVO_API_KEY,
   baseURL:
@@ -13,10 +10,10 @@ const inconvo = new Inconvo({
 });
 
 export async function POST(req: Request) {
-  const { message, conversationId } = (await req.json()) as {
+  const { message, conversationId }: {
     message?: string;
     conversationId?: string;
-  };
+  } = await req.json();
 
   if (!conversationId || typeof message !== "string") {
     return NextResponse.json(
