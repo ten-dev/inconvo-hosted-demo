@@ -143,10 +143,10 @@
   }
 }
 
-/* Handle virtual keyboard on mobile - ensure input stays visible */
+/* Handle virtual keyboard on mobile */
 @supports (height: 100dvh) {
   @media (max-width: 639px) {
-    html, body {
+    .aui-thread-root {
       height: 100dvh;
     }
   }

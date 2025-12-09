@@ -78,7 +78,7 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
       <InconvoTools />
       <ThreadPrimitive.Viewport
         turnAnchor="top"
-        className="aui-thread-viewport relative flex flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth px-4 pt-4"
+        className="aui-thread-viewport relative flex flex-1 flex-col justify-end sm:justify-start overflow-x-auto overflow-y-scroll scroll-smooth px-4 pt-4"
       >
         <ThreadPrimitive.If empty>
           <ThreadWelcome
@@ -196,17 +196,10 @@ const ThreadSuggestions: FC = () => {
 
 const Composer: FC = () => {
   const handleSubmit = () => {
-    // Blur the active element to dismiss mobile keyboard after sending
+    // Blur active element to dismiss mobile keyboard after sending
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
-  };
-
-  const handleFocus = (e: React.FocusEvent<HTMLTextAreaElement>) => {
-    // Scroll input into view when focused (helps with mobile virtual keyboard)
-    setTimeout(() => {
-      e.target.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 300);
   };
 
   return (
@@ -222,7 +215,6 @@ const Composer: FC = () => {
           rows={1}
           autoFocus
           aria-label="Message input"
-          onFocus={handleFocus}
         />
         <ComposerAction />
       </ComposerPrimitive.AttachmentDropzone>
