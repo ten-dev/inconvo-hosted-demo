@@ -78,7 +78,9 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
         className="aui-thread-viewport relative flex flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth px-4 pt-4"
       >
         <ThreadPrimitive.If empty>
-          <ThreadWelcome organisationSelectorProps={organisationSelectorProps} />
+          <ThreadWelcome
+            organisationSelectorProps={organisationSelectorProps}
+          />
         </ThreadPrimitive.If>
 
         <ThreadPrimitive.Messages
@@ -112,9 +114,11 @@ const ThreadScrollToBottom: FC = () => {
   );
 };
 
-const ThreadWelcome: FC<{ organisationSelectorProps?: OrganisationSelectorProps }> = ({ organisationSelectorProps }) => {
+const ThreadWelcome: FC<{
+  organisationSelectorProps?: OrganisationSelectorProps;
+}> = ({ organisationSelectorProps }) => {
   const selectedOrganisation = organisationSelectorProps?.options.find(
-    org => org.id === organisationSelectorProps.value
+    (org) => org.id === organisationSelectorProps.value,
   );
 
   const organisationName = selectedOrganisation?.name ?? "this organisation";
@@ -127,7 +131,8 @@ const ThreadWelcome: FC<{ organisationSelectorProps?: OrganisationSelectorProps 
             Ask me anything about the store's data
           </div>
           <div className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-2 animate-in text-muted-foreground/65 text-2xl delay-100 duration-300 ease-out">
-            I'm connected to the database and scoped to {organisationName}.
+            I'm connected to the database and scoped to the {organisationName}{" "}
+            organisation.
           </div>
         </div>
       </div>
