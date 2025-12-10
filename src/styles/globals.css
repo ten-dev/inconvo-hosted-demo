@@ -141,6 +141,37 @@
       opacity: 0.4;
     }
   }
+
+  .aui-streaming-message {
+    position: relative;
+    opacity: 0.82;
+    overflow: hidden;
+  }
+
+  .aui-streaming-message::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      120deg,
+      transparent 0%,
+      color-mix(in oklch, var(--color-foreground) 25%, transparent) 45%,
+      transparent 80%
+    );
+    transform: translateX(-100%);
+    animation: aui-shimmer 1.4s linear infinite;
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  @keyframes aui-shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
 }
 
 /* Handle virtual keyboard on mobile */

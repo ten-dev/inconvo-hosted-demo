@@ -43,7 +43,7 @@ export const InconvoTextMessage: TextMessagePartComponent = () => {
   }, [parsed, status.type, text]);
 
   const streamingClasses = isStreaming
-    ? "animate-pulse-fast"
+    ? "aui-streaming-message text-muted-foreground/80"
     : "";
 
   if (!parsed) {
