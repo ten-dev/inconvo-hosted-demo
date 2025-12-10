@@ -19,8 +19,8 @@ import {
   ThreadPrimitive,
 } from "@assistant-ui/react";
 import posthog from "posthog-js";
-
-import type { FC } from "react";
+import { useMediaQuery } from "@mantine/hooks";
+import { useCallback, useEffect, useRef, useState, type FC } from "react";
 
 import { Button } from "~/components/ui/button";
 import { InconvoTextMessage } from "~/components/assistant-ui/inconvo-text-message";
@@ -43,8 +43,31 @@ type ThreadProps = {
   organisationSelectorProps?: OrganisationSelectorProps;
 };
 
+type ScrollBehaviorOption = "auto" | "smooth";
+
 export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
   const { clearConversation } = useInconvoState();
+  const keyboardOffset = useKeyboardOffset();
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollViewportToBottom = useCallback(
+    (behavior: ScrollBehaviorOption = "smooth") => {
+      const viewportEl = viewportRef.current;
+      if (!viewportEl) {
+        return;
+      }
+
+      viewportEl.scrollTo({
+        top: viewportEl.scrollHeight,
+        behavior,
+      });
+    },
+    [],
+  );
+
+  useEffect(() => {
+    scrollViewportToBottom("auto");
+  }, [scrollViewportToBottom]);
 
   return (
     <ThreadPrimitive.Root
@@ -77,8 +100,14 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
       ) : null}
       <InconvoTools />
       <ThreadPrimitive.Viewport
+        ref={viewportRef}
         turnAnchor="top"
-        className="aui-thread-viewport relative flex flex-1 flex-col justify-end sm:justify-start overflow-x-auto overflow-y-scroll scroll-smooth px-4 pt-4"
+        className="aui-thread-viewport relative flex flex-1 flex-col justify-end sm:justify-start overflow-x-hidden overflow-y-auto overscroll-contain touch-pan-y scroll-smooth px-4 pt-4 pb-24 sm:pb-12"
+        style={
+          keyboardOffset
+            ? { paddingBottom: `calc(${keyboardOffset}px + 6rem)` }
+            : undefined
+        }
       >
         <ThreadPrimitive.If empty>
           <ThreadWelcome
@@ -94,9 +123,16 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
           }}
         />
 
-        <ThreadPrimitive.ViewportFooter className="aui-thread-viewport-footer bg-background sticky bottom-0 mx-auto mt-4 flex w-full max-w-(--thread-max-width) flex-col gap-4 overflow-visible rounded-t-3xl pb-4 md:pb-6">
+        <ThreadPrimitive.ViewportFooter
+          className="aui-thread-viewport-footer bg-background safe-area-pb sticky bottom-0 mx-auto mt-4 flex w-full max-w-(--thread-max-width) flex-col gap-4 overflow-visible rounded-t-3xl pb-4 md:pb-6"
+          style={
+            keyboardOffset
+              ? { transform: `translate3d(0, -${keyboardOffset}px, 0)` }
+              : undefined
+          }
+        >
           <ThreadScrollToBottom />
-          <Composer />
+          <Composer scrollToBottom={scrollViewportToBottom} />
         </ThreadPrimitive.ViewportFooter>
       </ThreadPrimitive.Viewport>
     </ThreadPrimitive.Root>
@@ -194,12 +230,29 @@ const ThreadSuggestions: FC = () => {
   );
 };
 
-const Composer: FC = () => {
-  const handleSubmit = () => {
-    // Blur active element to dismiss mobile keyboard after sending
-    if (document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
+const Composer: FC<{
+  scrollToBottom: (behavior?: ScrollBehaviorOption) => void;
+}> = ({ scrollToBottom }) => {
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
+  const isDesktop = useMediaQuery("(min-width: 640px)", false);
+
+  useEffect(() => {
+    if (isDesktop && inputRef.current) {
+      inputRef.current.focus();
     }
+  }, [isDesktop]);
+
+  const handleFocus = useCallback(() => {
+    requestAnimationFrame(() => {
+      scrollToBottom();
+    });
+  }, [scrollToBottom]);
+
+  const handleSubmit = () => {
+    requestAnimationFrame(() => {
+      scrollToBottom();
+      inputRef.current?.focus();
+    });
   };
 
   return (
@@ -210,10 +263,11 @@ const Composer: FC = () => {
       <ComposerPrimitive.AttachmentDropzone className="aui-composer-attachment-dropzone border-input bg-background has-[textarea:focus-visible]:border-ring has-[textarea:focus-visible]:ring-ring/50 data-[dragging=true]:border-ring data-[dragging=true]:bg-accent/50 dark:bg-background flex w-full flex-col rounded-3xl border px-1 pt-2 shadow-xs transition-[color,box-shadow] outline-none has-[textarea:focus-visible]:ring-[3px] data-[dragging=true]:border-dashed">
         <ComposerAttachments />
         <ComposerPrimitive.Input
+          ref={inputRef}
           placeholder="Send a message..."
           className="aui-composer-input placeholder:text-muted-foreground mb-1 max-h-32 min-h-16 w-full resize-none bg-transparent px-3.5 pt-1.5 pb-3 text-base outline-none focus-visible:ring-0"
           rows={1}
-          autoFocus
+          onFocus={handleFocus}
           aria-label="Message input"
         />
         <ComposerAction />
@@ -376,6 +430,40 @@ const EditComposer: FC = () => {
       </ComposerPrimitive.Root>
     </MessagePrimitive.Root>
   );
+};
+
+// Track the soft keyboard height so we can keep the composer visible on mobile
+const useKeyboardOffset = () => {
+  const [offset, setOffset] = useState(0);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.visualViewport) {
+      return;
+    }
+
+    const viewport = window.visualViewport;
+
+    const updateOffset = () => {
+      const nextOffset = Math.max(
+        0,
+        Math.round(window.innerHeight - viewport.height - viewport.offsetTop),
+      );
+
+      setOffset((current) => (current === nextOffset ? current : nextOffset));
+    };
+
+    updateOffset();
+
+    viewport.addEventListener("resize", updateOffset);
+    viewport.addEventListener("scroll", updateOffset);
+
+    return () => {
+      viewport.removeEventListener("resize", updateOffset);
+      viewport.removeEventListener("scroll", updateOffset);
+    };
+  }, []);
+
+  return offset;
 };
 
 const BranchPicker: FC<BranchPickerPrimitive.Root.Props> = ({
