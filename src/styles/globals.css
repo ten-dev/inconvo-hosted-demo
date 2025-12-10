@@ -145,15 +145,15 @@
   .aui-streaming-message {
     --aui-streaming-base: color-mix(
       in oklch,
-      var(--color-muted-foreground) 85%,
-      transparent
+      var(--color-foreground) 88%,
+      var(--color-background) 12%
     );
     --aui-streaming-highlight: color-mix(
       in oklch,
-      var(--color-foreground) 80%,
-      white 10%
+      var(--color-foreground) 65%,
+      white 35%
     );
-    opacity: 0.9;
+    opacity: 0.95;
   }
 
   .aui-streaming-message,
