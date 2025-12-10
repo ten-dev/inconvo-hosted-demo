@@ -42,9 +42,7 @@ export const InconvoTextMessage: TextMessagePartComponent = () => {
     }
   }, [parsed, status.type, text]);
 
-  const streamingClasses = isStreaming
-    ? "aui-streaming-message text-muted-foreground/80"
-    : "";
+  const streamingClasses = isStreaming ? "aui-streaming-message" : "";
 
   if (!parsed) {
     return (

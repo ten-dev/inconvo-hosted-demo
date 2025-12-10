@@ -48,7 +48,6 @@ type ScrollBehaviorOption = "auto" | "smooth";
 export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
   const { clearConversation } = useInconvoState();
   const viewportRef = useRef<HTMLDivElement | null>(null);
-  const isMobile = useMediaQuery("(max-width: 639px)", false);
 
   const scrollViewportToBottom = useCallback(
     (behavior: ScrollBehaviorOption = "smooth") => {
@@ -99,11 +98,16 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
         </div>
       ) : null}
       <InconvoTools />
+
+      {/* Scrollable messages area */}
       <ThreadPrimitive.Viewport
         ref={viewportRef}
         turnAnchor="top"
-        className="aui-thread-viewport relative flex min-h-0 flex-1 flex-col justify-end sm:justify-start overflow-x-hidden overflow-y-auto overscroll-contain touch-pan-y scroll-smooth px-4 pt-4 pb-4"
+        className="aui-thread-viewport relative flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto scroll-smooth px-4 pt-4"
       >
+        {/* On mobile (empty state): push content to bottom with flex-grow spacer */}
+        <div className="flex-1 sm:hidden" />
+
         <ThreadPrimitive.If empty>
           <ThreadWelcome
             organisationSelectorProps={organisationSelectorProps}
@@ -118,26 +122,17 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
           }}
         />
 
-        {/* Desktop: sticky footer inside viewport */}
-        {!isMobile && (
-          <ThreadPrimitive.ViewportFooter
-            className="aui-thread-viewport-footer bg-background safe-area-pb sticky bottom-0 mx-auto mt-4 flex w-full max-w-(--thread-max-width) flex-col gap-4 overflow-visible rounded-t-3xl pb-4 md:pb-6"
-          >
-            <ThreadScrollToBottom />
-            <Composer scrollToBottom={scrollViewportToBottom} />
-          </ThreadPrimitive.ViewportFooter>
-        )}
+        {/* Spacer for scroll-to-bottom to work correctly */}
+        <div className="h-4 shrink-0" />
       </ThreadPrimitive.Viewport>
 
-      {/* Mobile: fixed composer outside viewport */}
-      {isMobile && (
-        <div className="aui-mobile-composer-wrapper shrink-0 bg-background safe-area-pb px-4 pb-4">
-          <div className="relative mx-auto w-full max-w-(--thread-max-width)">
-            <ThreadScrollToBottom />
-            <Composer scrollToBottom={scrollViewportToBottom} />
-          </div>
+      {/* Composer area - always outside viewport for consistent behavior */}
+      <div className="aui-composer-wrapper shrink-0 bg-background px-4 pb-4 safe-area-pb">
+        <div className="relative mx-auto w-full max-w-(--thread-max-width)">
+          <ThreadScrollToBottom />
+          <Composer scrollToBottom={scrollViewportToBottom} />
         </div>
-      )}
+      </div>
     </ThreadPrimitive.Root>
   );
 };
