@@ -143,33 +143,63 @@
   }
 
   .aui-streaming-message {
-    position: relative;
-    opacity: 0.82;
-    overflow: hidden;
-  }
-
-  .aui-streaming-message::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      120deg,
-      transparent 0%,
-      color-mix(in oklch, var(--color-foreground) 25%, transparent) 45%,
-      transparent 80%
+    --aui-streaming-base: color-mix(
+      in oklch,
+      var(--color-muted-foreground) 85%,
+      transparent
     );
-    transform: translateX(-100%);
-    animation: aui-shimmer 1.4s linear infinite;
-    opacity: 0.35;
-    pointer-events: none;
+    --aui-streaming-highlight: color-mix(
+      in oklch,
+      var(--color-foreground) 80%,
+      white 10%
+    );
+    opacity: 0.9;
   }
 
-  @keyframes aui-shimmer {
+  .aui-streaming-message,
+  .aui-streaming-message :where(
+    p,
+    span,
+    li,
+    strong,
+    em,
+    b,
+    i,
+    u,
+    a,
+    blockquote,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    td,
+    th,
+    caption,
+    small,
+    mark
+  ) {
+    background-image: linear-gradient(
+      120deg,
+      var(--aui-streaming-base) 0%,
+      var(--aui-streaming-highlight) 45%,
+      var(--aui-streaming-base) 100%
+    );
+    background-size: 230% 100%;
+    background-repeat: no-repeat;
+    animation: aui-streaming-shimmer 1.5s linear infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  @keyframes aui-streaming-shimmer {
     0% {
-      transform: translateX(-100%);
+      background-position: -180% 0;
     }
     100% {
-      transform: translateX(100%);
+      background-position: 180% 0;
     }
   }
 }
