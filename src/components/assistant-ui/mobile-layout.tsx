@@ -8,8 +8,8 @@ type MobileLayoutProps = {
 
 export function MobileLayout({ chatContent }: MobileLayoutProps) {
   return (
-    <div className="aui-mobile-layout flex min-h-screen w-full flex-col overflow-hidden bg-background">
-      <div className="flex-1 overflow-hidden">{chatContent}</div>
+    <div className="aui-mobile-layout flex h-screen w-full flex-col overflow-hidden bg-background">
+      <div className="flex-1 min-h-0 overflow-hidden">{chatContent}</div>
     </div>
   );
 }

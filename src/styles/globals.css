@@ -209,9 +209,11 @@
   @media (max-width: 639px) {
     .aui-thread-root {
       height: 100dvh;
+      max-height: 100dvh;
     }
     .aui-mobile-layout {
-      min-height: 100dvh;
+      height: 100dvh;
+      max-height: 100dvh;
     }
   }
 }

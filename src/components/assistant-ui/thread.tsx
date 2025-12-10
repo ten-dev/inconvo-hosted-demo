@@ -20,7 +20,7 @@ import {
 } from "@assistant-ui/react";
 import posthog from "posthog-js";
 import { useMediaQuery } from "@mantine/hooks";
-import { useCallback, useEffect, useRef, useState, type FC } from "react";
+import { useCallback, useEffect, useRef, type FC } from "react";
 
 import { Button } from "~/components/ui/button";
 import { InconvoTextMessage } from "~/components/assistant-ui/inconvo-text-message";
@@ -47,8 +47,8 @@ type ScrollBehaviorOption = "auto" | "smooth";
 
 export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
   const { clearConversation } = useInconvoState();
-  const keyboardOffset = useKeyboardOffset();
   const viewportRef = useRef<HTMLDivElement | null>(null);
+  const isMobile = useMediaQuery("(max-width: 639px)", false);
 
   const scrollViewportToBottom = useCallback(
     (behavior: ScrollBehaviorOption = "smooth") => {
@@ -71,13 +71,13 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
 
   return (
     <ThreadPrimitive.Root
-      className="aui-root aui-thread-root bg-background @container flex h-full flex-col"
+      className="aui-root aui-thread-root bg-background @container flex h-full flex-col overflow-hidden"
       style={{
         ["--thread-max-width" as string]: "44rem",
       }}
     >
       {organisationSelectorProps ? (
-        <div className="aui-thread-organisation px-4 pt-4">
+        <div className="aui-thread-organisation shrink-0 px-4 pt-4">
           <div className="flex items-center justify-between gap-2">
             <OrganisationSelector
               {...organisationSelectorProps}
@@ -102,12 +102,7 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
       <ThreadPrimitive.Viewport
         ref={viewportRef}
         turnAnchor="top"
-        className="aui-thread-viewport relative flex flex-1 flex-col justify-end sm:justify-start overflow-x-hidden overflow-y-auto overscroll-contain touch-pan-y scroll-smooth px-4 pt-4 pb-24 sm:pb-12"
-        style={
-          keyboardOffset
-            ? { paddingBottom: `calc(${keyboardOffset}px + 6rem)` }
-            : undefined
-        }
+        className="aui-thread-viewport relative flex min-h-0 flex-1 flex-col justify-end sm:justify-start overflow-x-hidden overflow-y-auto overscroll-contain touch-pan-y scroll-smooth px-4 pt-4 pb-4"
       >
         <ThreadPrimitive.If empty>
           <ThreadWelcome
@@ -123,18 +118,26 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
           }}
         />
 
-        <ThreadPrimitive.ViewportFooter
-          className="aui-thread-viewport-footer bg-background safe-area-pb sticky bottom-0 mx-auto mt-4 flex w-full max-w-(--thread-max-width) flex-col gap-4 overflow-visible rounded-t-3xl pb-4 md:pb-6"
-          style={
-            keyboardOffset
-              ? { transform: `translate3d(0, -${keyboardOffset}px, 0)` }
-              : undefined
-          }
-        >
-          <ThreadScrollToBottom />
-          <Composer scrollToBottom={scrollViewportToBottom} />
-        </ThreadPrimitive.ViewportFooter>
+        {/* Desktop: sticky footer inside viewport */}
+        {!isMobile && (
+          <ThreadPrimitive.ViewportFooter
+            className="aui-thread-viewport-footer bg-background safe-area-pb sticky bottom-0 mx-auto mt-4 flex w-full max-w-(--thread-max-width) flex-col gap-4 overflow-visible rounded-t-3xl pb-4 md:pb-6"
+          >
+            <ThreadScrollToBottom />
+            <Composer scrollToBottom={scrollViewportToBottom} />
+          </ThreadPrimitive.ViewportFooter>
+        )}
       </ThreadPrimitive.Viewport>
+
+      {/* Mobile: fixed composer outside viewport */}
+      {isMobile && (
+        <div className="aui-mobile-composer-wrapper shrink-0 bg-background safe-area-pb px-4 pb-4">
+          <div className="relative mx-auto w-full max-w-(--thread-max-width)">
+            <ThreadScrollToBottom />
+            <Composer scrollToBottom={scrollViewportToBottom} />
+          </div>
+        </div>
+      )}
     </ThreadPrimitive.Root>
   );
 };
@@ -243,17 +246,18 @@ const Composer: FC<{
   }, [isDesktop]);
 
   const handleFocus = useCallback(() => {
-    requestAnimationFrame(() => {
+    // Small delay to let the keyboard fully open before scrolling
+    setTimeout(() => {
       scrollToBottom();
-    });
+    }, 100);
   }, [scrollToBottom]);
 
-  const handleSubmit = () => {
-    requestAnimationFrame(() => {
+  const handleSubmit = useCallback(() => {
+    // Scroll to bottom after submit
+    setTimeout(() => {
       scrollToBottom();
-      inputRef.current?.focus();
-    });
-  };
+    }, 50);
+  }, [scrollToBottom]);
 
   return (
     <ComposerPrimitive.Root
@@ -432,39 +436,6 @@ const EditComposer: FC = () => {
   );
 };
 
-// Track the soft keyboard height so we can keep the composer visible on mobile
-const useKeyboardOffset = () => {
-  const [offset, setOffset] = useState(0);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || !window.visualViewport) {
-      return;
-    }
-
-    const viewport = window.visualViewport;
-
-    const updateOffset = () => {
-      const nextOffset = Math.max(
-        0,
-        Math.round(window.innerHeight - viewport.height - viewport.offsetTop),
-      );
-
-      setOffset((current) => (current === nextOffset ? current : nextOffset));
-    };
-
-    updateOffset();
-
-    viewport.addEventListener("resize", updateOffset);
-    viewport.addEventListener("scroll", updateOffset);
-
-    return () => {
-      viewport.removeEventListener("resize", updateOffset);
-      viewport.removeEventListener("scroll", updateOffset);
-    };
-  }, []);
-
-  return offset;
-};
 
 const BranchPicker: FC<BranchPickerPrimitive.Root.Props> = ({
   className,
