@@ -183,14 +183,14 @@ const ThreadSuggestions: FC = () => {
     <div className="aui-thread-welcome-suggestions grid w-full gap-2 pb-4 @md:grid-cols-2">
       {[
         {
-          title: "What tools",
-          label: "can you use?",
-          action: "What tools can you use?",
+          title: "Revenue by product",
+          label: "for this year",
+          action: "Show me the revenue by product this year",
         },
         {
-          title: "What data",
-          label: "do you have access to?",
-          action: "What data do you have access to?",
+          title: "MacBook sales",
+          label: "April 23 vs April 24",
+          action: "How do macbook sales compare april 23 vs april 24",
         },
       ].map((suggestedAction, index) => (
         <div
