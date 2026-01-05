@@ -32,12 +32,12 @@ import {
 } from "~/components/assistant-ui/attachment";
 
 import { cn } from "~/lib/utils";
-import { InconvoTools } from "./tools/inconvo-tools";
 import {
   OrganisationSelector,
   type OrganisationSelectorProps,
 } from "~/components/organisation/organisation-selector";
 import { useInconvoState } from "~/app/InconvoRuntimeProvider";
+import { InconvoTools } from "./tools/inconvo-tools";
 
 type ThreadProps = {
   organisationSelectorProps?: OrganisationSelectorProps;
@@ -53,6 +53,7 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
         ["--thread-max-width" as string]: "44rem",
       }}
     >
+      <InconvoTools />
       {organisationSelectorProps ? (
         <div className="aui-thread-organisation px-4 pt-4">
           <div className="flex items-center justify-between gap-2">
@@ -72,7 +73,6 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
           </div>
         </div>
       ) : null}
-      <InconvoTools />
       <ThreadPrimitive.Viewport
         turnAnchor="top"
         className="aui-thread-viewport relative flex flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth px-4 pt-4"
@@ -118,7 +118,7 @@ const ThreadWelcome: FC<{
   organisationSelectorProps?: OrganisationSelectorProps;
 }> = ({ organisationSelectorProps }) => {
   const selectedOrganisation = organisationSelectorProps?.options.find(
-    (org) => org.id === organisationSelectorProps.value,
+    (org) => org.id === organisationSelectorProps.value
   );
 
   const organisationName = selectedOrganisation?.name ?? "this organisation";
@@ -373,7 +373,7 @@ const BranchPicker: FC<BranchPickerPrimitive.Root.Props> = ({
       hideWhenSingleBranch
       className={cn(
         "aui-branch-picker-root text-muted-foreground mr-2 -ml-2 inline-flex items-center text-xs",
-        className,
+        className
       )}
       {...rest}
     >

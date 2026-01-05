@@ -44,9 +44,13 @@
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "react-resizable-panels": "^3.0.6",
+    "react-vega": "^8.0.0",
     "recharts": "^3.5.1",
     "remark-gfm": "^4.0.1",
     "tailwind-merge": "^3.4.0",
+    "vega": "^5.33.0",
+    "vega-embed": "^7.1.0",
+    "vega-lite": "^5.23.0",
     "zod": "^4.1.13",
     "zustand": "^5.0.9"
   },
