@@ -12,6 +12,7 @@ import {
   type ReactNode,
 } from "react";
 import NextImage from "next/image";
+import posthog from "posthog-js";
 import {
   ActionIcon,
   Badge,
@@ -257,6 +258,11 @@ export default function HomePage() {
         return current;
       }
       setThreadResetKey((prev) => prev + 1);
+      // Track organisation switch event
+      posthog.capture("organisation_switched", {
+        previous_organisation_id: current,
+        new_organisation_id: value,
+      });
       return value;
     });
   }, []);
@@ -354,6 +360,12 @@ export default function HomePage() {
         autoClose: 4000,
       });
       return;
+    }
+    // Track demo onboarding completed when user finishes the walkthrough
+    if (isFirstVisit && currentStep >= totalSteps - 1) {
+      posthog.capture("demo_onboarding_completed", {
+        total_slides_viewed: totalSteps,
+      });
     }
     setInfoModalOpen(false);
   }, [isFirstVisit, currentStep, totalSteps]);
@@ -619,6 +631,7 @@ export default function HomePage() {
                   onClick={() => {
                     setInfoModalOpen(true);
                     setCurrentStep(0);
+                    posthog.capture("info_modal_opened");
                   }}
                   aria-label="Information"
                 >
@@ -627,7 +640,13 @@ export default function HomePage() {
               </Group>
               <DatabaseSelector
                 activeTableId={focusedTableId}
-                onSelect={(id) => setFocusedTableId(id)}
+                onSelect={(id) => {
+                  setFocusedTableId(id);
+                  posthog.capture("database_table_selected", {
+                    table_id: id,
+                    table_name: SEMANTIC_TABLE_MAP[id]?.name ?? id,
+                  });
+                }}
               />
             </Box>
             <Stack gap="lg" style={{ marginBottom: rem(64) }}>

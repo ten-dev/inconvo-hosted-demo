@@ -6,7 +6,6 @@ import {
   ChevronRightIcon,
   CopyIcon,
   PencilIcon,
-  RefreshCwIcon,
   Square,
   PlusIcon,
 } from "lucide-react";
@@ -19,8 +18,9 @@ import {
   MessagePrimitive,
   ThreadPrimitive,
 } from "@assistant-ui/react";
-
-import type { FC } from "react";
+import posthog from "posthog-js";
+import { useMediaQuery } from "@mantine/hooks";
+import { useCallback, useEffect, useRef, type FC } from "react";
 
 import { Button } from "~/components/ui/button";
 import { InconvoTextMessage } from "~/components/assistant-ui/inconvo-text-message";
@@ -43,19 +43,21 @@ type ThreadProps = {
   organisationSelectorProps?: OrganisationSelectorProps;
 };
 
+type ScrollBehaviorOption = "auto" | "smooth";
+
 export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
   const { clearConversation } = useInconvoState();
 
   return (
     <ThreadPrimitive.Root
-      className="aui-root aui-thread-root bg-background @container flex h-full flex-col"
+      className="aui-root aui-thread-root bg-background @container flex h-full flex-col overflow-hidden"
       style={{
         ["--thread-max-width" as string]: "44rem",
       }}
     >
       <InconvoTools />
       {organisationSelectorProps ? (
-        <div className="aui-thread-organisation px-4 pt-4">
+        <div className="aui-thread-organisation shrink-0 px-4 pt-4">
           <div className="flex items-center justify-between gap-2">
             <OrganisationSelector
               {...organisationSelectorProps}
@@ -64,7 +66,10 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
             <Button
               variant="outline"
               size="sm"
-              onClick={clearConversation}
+              onClick={() => {
+                clearConversation();
+                posthog.capture("new_thread_clicked");
+              }}
               className="flex items-center gap-2"
             >
               <PlusIcon className="size-4" />
@@ -74,9 +79,13 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
         </div>
       ) : null}
       <ThreadPrimitive.Viewport
+        ref={viewportRef}
         turnAnchor="top"
-        className="aui-thread-viewport relative flex flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth px-4 pt-4"
+        className="aui-thread-viewport relative flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto scroll-smooth px-4 pt-4"
       >
+        {/* On mobile (empty state): push content to bottom with flex-grow spacer */}
+        <div className="flex-1 sm:hidden" />
+
         <ThreadPrimitive.If empty>
           <ThreadWelcome
             organisationSelectorProps={organisationSelectorProps}
@@ -91,11 +100,17 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
           }}
         />
 
-        <ThreadPrimitive.ViewportFooter className="aui-thread-viewport-footer bg-background sticky bottom-0 mx-auto mt-4 flex w-full max-w-(--thread-max-width) flex-col gap-4 overflow-visible rounded-t-3xl pb-4 md:pb-6">
-          <ThreadScrollToBottom />
-          <Composer />
-        </ThreadPrimitive.ViewportFooter>
+        {/* Spacer for scroll-to-bottom to work correctly */}
+        <div className="h-4 shrink-0" />
       </ThreadPrimitive.Viewport>
+
+      {/* Composer area - always outside viewport for consistent behavior */}
+      <div className="aui-composer-wrapper shrink-0 bg-background px-4 pb-4 safe-area-pb">
+        <div className="relative mx-auto w-full max-w-(--thread-max-width)">
+          <ThreadScrollToBottom />
+          <Composer scrollToBottom={scrollViewportToBottom} />
+        </div>
+      </div>
     </ThreadPrimitive.Root>
   );
 };
@@ -124,7 +139,7 @@ const ThreadWelcome: FC<{
   const organisationName = selectedOrganisation?.name ?? "this organisation";
 
   return (
-    <div className="aui-thread-welcome-root mx-auto my-auto flex w-full max-w-(--thread-max-width) grow flex-col">
+    <div className="aui-thread-welcome-root mx-auto my-auto hidden w-full max-w-(--thread-max-width) grow flex-col sm:flex">
       <div className="aui-thread-welcome-center flex w-full grow flex-col items-center justify-center">
         <div className="aui-thread-welcome-message flex size-full flex-col justify-center px-8">
           <div className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-2 animate-in text-2xl font-semibold duration-300 ease-out">
@@ -146,14 +161,14 @@ const ThreadSuggestions: FC = () => {
     <div className="aui-thread-welcome-suggestions grid w-full gap-2 pb-4 @md:grid-cols-2">
       {[
         {
-          title: "What tools",
-          label: "can you use?",
-          action: "What tools can you use?",
+          title: "Revenue by product",
+          label: "for this year",
+          action: "Show me the revenue by product this year",
         },
         {
-          title: "What data",
-          label: "do you have access to?",
-          action: "What data do you have access to?",
+          title: "MacBook sales",
+          label: "April 23 vs April 24",
+          action: "How do macbook sales compare april 23 vs april 24",
         },
       ].map((suggestedAction, index) => (
         <div
@@ -170,6 +185,12 @@ const ThreadSuggestions: FC = () => {
               variant="ghost"
               className="aui-thread-welcome-suggestion dark:hover:bg-accent/60 h-auto w-full flex-1 flex-wrap items-start justify-start gap-1 rounded-3xl border px-5 py-4 text-left text-sm @md:flex-col"
               aria-label={suggestedAction.action}
+              onClick={() => {
+                posthog.capture("suggestion_clicked", {
+                  suggestion_title: suggestedAction.title,
+                  suggestion_action: suggestedAction.action,
+                });
+              }}
             >
               <span className="aui-thread-welcome-suggestion-text-1 font-medium">
                 {suggestedAction.title}
@@ -185,16 +206,45 @@ const ThreadSuggestions: FC = () => {
   );
 };
 
-const Composer: FC = () => {
+const Composer: FC<{
+  scrollToBottom: (behavior?: ScrollBehaviorOption) => void;
+}> = ({ scrollToBottom }) => {
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
+  const isDesktop = useMediaQuery("(min-width: 640px)", false);
+
+  useEffect(() => {
+    if (isDesktop && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isDesktop]);
+
+  const handleFocus = useCallback(() => {
+    // Small delay to let the keyboard fully open before scrolling
+    setTimeout(() => {
+      scrollToBottom();
+    }, 100);
+  }, [scrollToBottom]);
+
+  const handleSubmit = useCallback(() => {
+    // Scroll to bottom after submit
+    setTimeout(() => {
+      scrollToBottom();
+    }, 50);
+  }, [scrollToBottom]);
+
   return (
-    <ComposerPrimitive.Root className="aui-composer-root relative flex w-full flex-col">
+    <ComposerPrimitive.Root
+      className="aui-composer-root relative flex w-full flex-col"
+      onSubmit={handleSubmit}
+    >
       <ComposerPrimitive.AttachmentDropzone className="aui-composer-attachment-dropzone border-input bg-background has-[textarea:focus-visible]:border-ring has-[textarea:focus-visible]:ring-ring/50 data-[dragging=true]:border-ring data-[dragging=true]:bg-accent/50 dark:bg-background flex w-full flex-col rounded-3xl border px-1 pt-2 shadow-xs transition-[color,box-shadow] outline-none has-[textarea:focus-visible]:ring-[3px] data-[dragging=true]:border-dashed">
         <ComposerAttachments />
         <ComposerPrimitive.Input
+          ref={inputRef}
           placeholder="Send a message..."
           className="aui-composer-input placeholder:text-muted-foreground mb-1 max-h-32 min-h-16 w-full resize-none bg-transparent px-3.5 pt-1.5 pb-3 text-base outline-none focus-visible:ring-0"
           rows={1}
-          autoFocus
+          onFocus={handleFocus}
           aria-label="Message input"
         />
         <ComposerAction />

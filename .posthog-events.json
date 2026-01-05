@@ -1,0 +1,67 @@
+[
+  {
+    "eventName": "demo_onboarding_completed",
+    "eventDescription": "User completes the demo walkthrough slides by viewing all steps and clicking 'Get Started'",
+    "filePath": "src/app/page.tsx"
+  },
+  {
+    "eventName": "organisation_switched",
+    "eventDescription": "User switches to a different organisation, which scopes the assistant to that organisation's data",
+    "filePath": "src/app/page.tsx"
+  },
+  {
+    "eventName": "conversation_created",
+    "eventDescription": "User creates a new conversation with the AI assistant (important for measuring engagement)",
+    "filePath": "src/app/InconvoRuntimeProvider.tsx"
+  },
+  {
+    "eventName": "message_sent",
+    "eventDescription": "User sends a message to the AI assistant (key engagement metric)",
+    "filePath": "src/app/InconvoRuntimeProvider.tsx"
+  },
+  {
+    "eventName": "response_received",
+    "eventDescription": "Assistant response is successfully received and completed (measures successful interactions)",
+    "filePath": "src/app/InconvoRuntimeProvider.tsx"
+  },
+  {
+    "eventName": "response_error",
+    "eventDescription": "An error occurred while fetching the assistant response (important for error tracking)",
+    "filePath": "src/app/InconvoRuntimeProvider.tsx"
+  },
+  {
+    "eventName": "conversation_cleared",
+    "eventDescription": "User clears/resets the current conversation",
+    "filePath": "src/app/InconvoRuntimeProvider.tsx"
+  },
+  {
+    "eventName": "new_thread_clicked",
+    "eventDescription": "User clicks the 'New Thread' button to start a fresh conversation",
+    "filePath": "src/components/assistant-ui/thread.tsx"
+  },
+  {
+    "eventName": "suggestion_clicked",
+    "eventDescription": "User clicks a suggested action/prompt to start a conversation",
+    "filePath": "src/components/assistant-ui/thread.tsx"
+  },
+  {
+    "eventName": "database_table_selected",
+    "eventDescription": "User selects a different database table to view in the semantic model viewer",
+    "filePath": "src/app/page.tsx"
+  },
+  {
+    "eventName": "info_modal_opened",
+    "eventDescription": "User opens the info/help modal to view the demo walkthrough again",
+    "filePath": "src/app/page.tsx"
+  },
+  {
+    "eventName": "chart_rendered",
+    "eventDescription": "A chart response is rendered in the assistant conversation (measures AI output types)",
+    "filePath": "src/components/assistant-ui/inconvo-text-message.tsx"
+  },
+  {
+    "eventName": "table_rendered",
+    "eventDescription": "A table response is rendered in the assistant conversation (measures AI output types)",
+    "filePath": "src/components/assistant-ui/inconvo-text-message.tsx"
+  }
+]

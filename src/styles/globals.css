@@ -123,3 +123,83 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .animate-pulse-fast {
+    animation: pulse-fast 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse-fast {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.4;
+    }
+  }
+
+}
+
+/* Streaming message shimmer effect */
+.aui-streaming-message {
+  --aui-shimmer-base: oklch(0.45 0 0);
+  --aui-shimmer-highlight: oklch(0.7 0 0);
+}
+
+.dark .aui-streaming-message {
+  --aui-shimmer-base: oklch(0.6 0 0);
+  --aui-shimmer-highlight: oklch(0.85 0 0);
+}
+
+.aui-streaming-message,
+.aui-streaming-message p,
+.aui-streaming-message span,
+.aui-streaming-message li,
+.aui-streaming-message strong,
+.aui-streaming-message em,
+.aui-streaming-message a,
+.aui-streaming-message h1,
+.aui-streaming-message h2,
+.aui-streaming-message h3,
+.aui-streaming-message h4,
+.aui-streaming-message h5,
+.aui-streaming-message h6 {
+  background: linear-gradient(
+    90deg,
+    var(--aui-shimmer-base) 0%,
+    var(--aui-shimmer-highlight) 50%,
+    var(--aui-shimmer-base) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  animation: aui-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes aui-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+/* Handle virtual keyboard on mobile */
+@supports (height: 100dvh) {
+  @media (max-width: 639px) {
+    .aui-thread-root {
+      height: 100dvh;
+      max-height: 100dvh;
+    }
+    .aui-mobile-layout {
+      height: 100dvh;
+      max-height: 100dvh;
+    }
+  }
+}
