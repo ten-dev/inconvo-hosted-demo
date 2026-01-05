@@ -47,6 +47,20 @@ type ScrollBehaviorOption = "auto" | "smooth";
 
 export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
   const { clearConversation } = useInconvoState();
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollViewportToBottom = useCallback(
+    (behavior: ScrollBehaviorOption = "smooth") => {
+      const viewport = viewportRef.current;
+      if (!viewport) return;
+
+      viewport.scrollTo({
+        top: viewport.scrollHeight,
+        behavior,
+      });
+    },
+    []
+  );
 
   return (
     <ThreadPrimitive.Root
