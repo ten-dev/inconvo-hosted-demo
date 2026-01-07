@@ -50,7 +50,13 @@ const MessageDataAnalystToolRender: ToolCallMessagePartComponent<
           title="Unable to read analyst response"
           description="The response couldn't be parsed. Showing the raw payload below."
         />
-        <RawPayload payload={typeof result === "string" ? result : JSON.stringify(result, null, 2)} />
+        <RawPayload
+          payload={
+            typeof result === "string"
+              ? result
+              : JSON.stringify(result, null, 2)
+          }
+        />
       </ToolCard>
     );
   }
@@ -101,13 +107,7 @@ const MessageDataAnalystToolRender: ToolCallMessagePartComponent<
             title={parsed.chart.title ?? "Chart"}
             description={parsed.message}
           />
-          <InconvoChart
-            data={parsed.chart.data}
-            variant={parsed.chart.type}
-            title={parsed.chart.title}
-            xLabel={parsed.chart.xLabel}
-            yLabel={parsed.chart.yLabel}
-          />
+          <InconvoChart spec={parsed.chart.spec} />
         </ToolCard>
       );
     case "table":
@@ -124,10 +124,7 @@ const MessageDataAnalystToolRender: ToolCallMessagePartComponent<
       }
       return (
         <ToolCard>
-          <ToolCardHeader
-            title="Tabular result"
-            description={parsed.message}
-          />
+          <ToolCardHeader title="Tabular result" description={parsed.message} />
           <DataTable head={parsed.table.head} body={parsed.table.body} />
         </ToolCard>
       );

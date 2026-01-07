@@ -32,12 +32,12 @@ import {
 } from "~/components/assistant-ui/attachment";
 
 import { cn } from "~/lib/utils";
-import { InconvoTools } from "./tools/inconvo-tools";
 import {
   OrganisationSelector,
   type OrganisationSelectorProps,
 } from "~/components/organisation/organisation-selector";
 import { useInconvoState } from "~/app/InconvoRuntimeProvider";
+import { InconvoTools } from "./tools/inconvo-tools";
 
 type ThreadProps = {
   organisationSelectorProps?: OrganisationSelectorProps;
@@ -51,22 +51,16 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
 
   const scrollViewportToBottom = useCallback(
     (behavior: ScrollBehaviorOption = "smooth") => {
-      const viewportEl = viewportRef.current;
-      if (!viewportEl) {
-        return;
-      }
+      const viewport = viewportRef.current;
+      if (!viewport) return;
 
-      viewportEl.scrollTo({
-        top: viewportEl.scrollHeight,
+      viewport.scrollTo({
+        top: viewport.scrollHeight,
         behavior,
       });
     },
-    [],
+    []
   );
-
-  useEffect(() => {
-    scrollViewportToBottom("auto");
-  }, [scrollViewportToBottom]);
 
   return (
     <ThreadPrimitive.Root
@@ -75,6 +69,7 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
         ["--thread-max-width" as string]: "44rem",
       }}
     >
+      <InconvoTools />
       {organisationSelectorProps ? (
         <div className="aui-thread-organisation shrink-0 px-4 pt-4">
           <div className="flex items-center justify-between gap-2">
@@ -97,9 +92,6 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
           </div>
         </div>
       ) : null}
-      <InconvoTools />
-
-      {/* Scrollable messages area */}
       <ThreadPrimitive.Viewport
         ref={viewportRef}
         turnAnchor="top"
@@ -155,7 +147,7 @@ const ThreadWelcome: FC<{
   organisationSelectorProps?: OrganisationSelectorProps;
 }> = ({ organisationSelectorProps }) => {
   const selectedOrganisation = organisationSelectorProps?.options.find(
-    (org) => org.id === organisationSelectorProps.value,
+    (org) => org.id === organisationSelectorProps.value
   );
 
   const organisationName = selectedOrganisation?.name ?? "this organisation";
@@ -431,7 +423,6 @@ const EditComposer: FC = () => {
   );
 };
 
-
 const BranchPicker: FC<BranchPickerPrimitive.Root.Props> = ({
   className,
   ...rest
@@ -441,7 +432,7 @@ const BranchPicker: FC<BranchPickerPrimitive.Root.Props> = ({
       hideWhenSingleBranch
       className={cn(
         "aui-branch-picker-root text-muted-foreground mr-2 -ml-2 inline-flex items-center text-xs",
-        className,
+        className
       )}
       {...rest}
     >

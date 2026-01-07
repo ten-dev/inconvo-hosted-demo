@@ -68,13 +68,7 @@ export const InconvoTextMessage: TextMessagePartComponent = () => {
       <ResponseCard className={streamingClasses}>
         <ResponseTitle title={parsed.chart.title ?? "Chart"} />
         {parsed.message ? <ResponseBody>{parsed.message}</ResponseBody> : null}
-        <InconvoChart
-          data={parsed.chart.data}
-          variant={parsed.chart.type}
-          title={parsed.chart.title}
-          xLabel={parsed.chart.xLabel}
-          yLabel={parsed.chart.yLabel}
-        />
+        <InconvoChart spec={parsed.chart.spec} />
       </ResponseCard>
     );
   }
