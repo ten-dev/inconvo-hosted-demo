@@ -115,11 +115,14 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
         />
 
         {/* Spacer for scroll-to-bottom to work correctly */}
-        <div className="h-4 shrink-0" />
+        <div className="h-2 shrink-0" />
       </ThreadPrimitive.Viewport>
 
       {/* Composer area - always outside viewport for consistent behavior */}
-      <div className="aui-composer-wrapper shrink-0 bg-background px-4 pb-4 safe-area-pb">
+      <div
+        className="aui-composer-wrapper shrink-0 bg-background px-4 safe-area-pb"
+        style={{ paddingBottom: '6rem' }}
+      >
         <div className="relative mx-auto w-full max-w-(--thread-max-width)">
           <ThreadScrollToBottom />
           <Composer scrollToBottom={scrollViewportToBottom} />
@@ -153,7 +156,7 @@ const ThreadWelcome: FC<{
   const organisationName = selectedOrganisation?.name ?? "this organisation";
 
   return (
-    <div className="aui-thread-welcome-root mx-auto my-auto hidden w-full max-w-(--thread-max-width) grow flex-col sm:flex">
+    <div className="aui-thread-welcome-root mx-auto mt-auto hidden w-full max-w-(--thread-max-width) grow flex-col sm:flex">
       <div className="aui-thread-welcome-center flex w-full grow flex-col items-center justify-center">
         <div className="aui-thread-welcome-message flex size-full flex-col justify-center px-8">
           <div className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-2 animate-in text-2xl font-semibold duration-300 ease-out">
@@ -172,7 +175,7 @@ const ThreadWelcome: FC<{
 
 const ThreadSuggestions: FC = () => {
   return (
-    <div className="aui-thread-welcome-suggestions grid w-full gap-2 pb-4 @md:grid-cols-2">
+    <div className="aui-thread-welcome-suggestions grid w-full gap-2 pb-2 @md:grid-cols-2">
       {[
         {
           title: "Revenue by product",
@@ -256,7 +259,7 @@ const Composer: FC<{
         <ComposerPrimitive.Input
           ref={inputRef}
           placeholder="Send a message..."
-          className="aui-composer-input placeholder:text-muted-foreground mb-1 max-h-32 min-h-16 w-full resize-none bg-transparent px-3.5 pt-1.5 pb-3 text-base outline-none focus-visible:ring-0"
+          className="aui-composer-input placeholder:text-muted-foreground mb-1 max-h-32 min-h-12 w-full resize-none bg-transparent px-3.5 pt-1.5 pb-3 text-base outline-none focus-visible:ring-0"
           rows={1}
           onFocus={handleFocus}
           aria-label="Message input"
