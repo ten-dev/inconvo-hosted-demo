@@ -33,10 +33,10 @@ export async function POST(req: Request) {
 
     const organisationId = parseOrganisationId(body.organisationId);
     const params: ConversationCreateParams = {
-      context: {},
+      userContext: {},
     };
     if (organisationId !== null) {
-      params.context.organisationId = organisationId;
+      params.userContext.organisationId = organisationId;
     }
 
     const conversation = await inconvo.conversations.create(params);
@@ -70,7 +70,7 @@ export async function GET(req: Request) {
     const listParams =
       organisationId === null
         ? { limit: 50 }
-        : { limit: 50, context: { organisationId } };
+        : { limit: 50, userContext: { organisationId } };
     const conversations = await inconvo.conversations.list(listParams);
 
     return NextResponse.json(conversations);

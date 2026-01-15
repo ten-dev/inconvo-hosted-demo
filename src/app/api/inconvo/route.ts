@@ -10,7 +10,10 @@ const inconvo = new Inconvo({
 });
 
 export async function POST(req: Request) {
-  const { message, conversationId }: {
+  const {
+    message,
+    conversationId,
+  }: {
     message?: string;
     conversationId?: string;
   } = await req.json();
@@ -18,7 +21,7 @@ export async function POST(req: Request) {
   if (!conversationId || typeof message !== "string") {
     return NextResponse.json(
       { error: "conversationId and message are required" },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -33,10 +36,15 @@ export async function POST(req: Request) {
         try {
           for await (const event of sseStream) {
             controller.enqueue(
-              new TextEncoder().encode(JSON.stringify(event) + "\n"),
+              new TextEncoder().encode(JSON.stringify(event) + "\n")
             );
 
             if (event.type === "response.completed") {
+              controller.close();
+              return;
+            }
+
+            if ((event as { type: string }).type === "error") {
               controller.close();
               return;
             }
@@ -57,7 +65,7 @@ export async function POST(req: Request) {
     console.error("Inconvo API error:", error);
     return NextResponse.json(
       { error: "Error processing request" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

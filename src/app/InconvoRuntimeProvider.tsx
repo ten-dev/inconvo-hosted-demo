@@ -201,12 +201,29 @@ export function InconvoRuntimeProvider({
 
           for (const line of lines) {
             if (!line.trim()) continue;
-            let event: ResponseStreamEvent;
+            let event: ResponseStreamEvent | { type: "error"; error: string };
             try {
-              event = JSON.parse(line) as ResponseStreamEvent;
+              event = JSON.parse(line) as ResponseStreamEvent | { type: "error"; error: string };
             } catch (error) {
               console.error("Unable to parse Inconvo event:", error);
               continue;
+            }
+
+            if (event.type === "error") {
+              setMessageState((prev) =>
+                prev.map((msg) =>
+                  msg.id === assistantMessageId
+                    ? {
+                        ...msg,
+                        content: {
+                          type: "text",
+                          message: `Error: ${event.error}`,
+                        },
+                      }
+                    : msg
+                )
+              );
+              return;
             }
 
             if (event.type === "response.progress" && event.message) {
