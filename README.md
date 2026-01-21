@@ -1,29 +1,92 @@
-# Create T3 App
+# Inconvo Demo
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+A demonstration of a data agent built with [Inconvo](https://inconvo.com) and integrated with an in-app assistant.
 
-## What's next? How do I make an app with this?
+## What is this?
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+This demo showcases how Inconvo can be used to build an AI-powered data agent that connects to your application's database and answers questions in natural language. The demo uses a multi-tenant ecommerce database with three organizations (Apple, Tesla, and Logitech) to demonstrate data isolation and scoped queries.
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+**Key features:**
+- Natural language queries to SQL using Inconvo
+- Multi-tenant data isolation (queries are automatically scoped to the selected organization)
+- Real-time data visualization with charts and tables
+- Built with Next.js and the assistant-ui React components
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+## What is Inconvo?
 
-## Learn More
+Inconvo is a platform that connects your database to AI assistants safely and reliably. It provides:
+- Semantic data modeling
+- Verified SQL generation from natural language
+- Query logging and monitoring
+- Multi-tenant data isolation
+- Deploy via MCP (Model Context Protocol) or API
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+## Getting Started
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+### Prerequisites
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+- Node.js 18+
+- npm or yarn or bun
 
-## How do I deploy this?
+### Installation
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+1. Clone the repository:
+```bash
+git clone https://github.com/inconvo-ai/inconvo-demo.git
+cd inconvo-demo
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Set up environment variables:
+```bash
+cp .env.example .env
+```
+
+4. Run the development server:
+```bash
+npm run dev
+```
+
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+## How it works
+
+The demo connects to a PostgreSQL database with a multi-tenant ecommerce schema:
+- **Organizations** - The top-level tenant (Apple, Tesla, Logitech)
+- **Products** - Products belonging to each organization
+- **Orders** - Customer orders
+- **Users** - Customer accounts
+- **Reviews** - Product reviews
+
+All data is connected through `organisation_id`, ensuring complete data isolation between tenants.
+
+When you ask a question like "What's my revenue this year?", Inconvo:
+1. Understands the semantic meaning of your question
+2. Generates safe SQL queries scoped to the selected organization
+3. Executes the query and formats the results
+4. Returns data visualizations (tables, charts, etc.)
+
+## Try the security
+
+The demo includes a "Test data isolation" suggestion that attempts to access data from other organizations. This demonstrates Inconvo's built-in security - queries are automatically restricted to the selected organization's data.
+
+## Build your own
+
+Want to build your own data agent? [Start free at Inconvo](https://app.inconvo.ai) - no credit card required.
+
+## Tech Stack
+
+- [Next.js](https://nextjs.org) - React framework
+- [Inconvo](https://inconvo.com) - AI data agent platform
+- [assistant-ui](https://github.com/assistant-ui/assistant-ui) - React components for AI assistants
+- [Mantine](https://mantine.dev) - React component library
+- [Tailwind CSS](https://tailwindcss.com) - CSS framework
+- [PostgreSQL](https://www.postgresql.org) - Database
+
+## License
+
+MIT
