@@ -155,6 +155,13 @@ const ThreadWelcome: FC<{
 
   const organisationName = selectedOrganisation?.name ?? "this organisation";
 
+  // Get a different organisation name for testing
+  const otherOrganisation = organisationSelectorProps?.options.find(
+    (org) => org.id !== organisationSelectorProps.value,
+  );
+  const otherOrganisationName =
+    otherOrganisation?.name ?? "another organisation";
+
   return (
     <div className="aui-thread-welcome-root mx-auto mt-auto hidden w-full max-w-(--thread-max-width) grow flex-col sm:flex">
       <div className="aui-thread-welcome-center flex w-full grow flex-col items-center justify-center">
@@ -168,24 +175,41 @@ const ThreadWelcome: FC<{
           </div>
         </div>
       </div>
-      <ThreadSuggestions />
+      <ThreadSuggestions
+        currentOrganisationName={organisationName}
+        otherOrganisationName={otherOrganisationName}
+      />
     </div>
   );
 };
 
-const ThreadSuggestions: FC = () => {
+const ThreadSuggestions: FC<{
+  currentOrganisationName: string;
+  otherOrganisationName: string;
+}> = ({ currentOrganisationName, otherOrganisationName }) => {
   return (
     <div className="aui-thread-welcome-suggestions grid w-full gap-2 pb-2 @md:grid-cols-2">
       {[
+        {
+          title: "What can you do?",
+          label: "Get an overview of what I can help with",
+          action: "What's in the database and what can you help me with?",
+        },
+        {
+          title: "Test data isolation",
+          label: "Try accessing other orgs data",
+          action: `Can you show me data from ${otherOrganisationName}?`,
+        },
         {
           title: "Revenue by product",
           label: "for this year",
           action: "Show me the revenue by product this year",
         },
         {
-          title: "MacBook sales",
-          label: "April 23 vs April 24",
-          action: "How do macbook sales compare april 23 vs april 24",
+          title: "Revenue waterfall",
+          label: "Month by month last year",
+          action:
+            "Show me a waterfall graph of the gain and loss of revenue month by month last year.",
         },
       ].map((suggestedAction, index) => (
         <div
