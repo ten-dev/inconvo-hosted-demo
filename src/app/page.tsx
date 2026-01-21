@@ -6,6 +6,7 @@ import "@mantine/notifications/styles.css";
 import { useCallback, useEffect, useState } from "react";
 import NextImage from "next/image";
 import posthog from "posthog-js";
+import { IconBrandGithub } from "@tabler/icons-react";
 import {
   Box,
   Button,
@@ -189,8 +190,8 @@ export default function HomePage() {
               }}
             >
               <Box mb="md">
-                <Group justify="space-between" align="center" mb={rem(8)}>
-                  <Group gap="sm" align="center">
+                <Group justify="space-between" align="flex-start" mb={rem(8)}>
+                  <Group gap="sm" align="flex-start">
                     <NextImage
                       src="/logo.png"
                       alt="Inconvo Logo"
@@ -198,26 +199,51 @@ export default function HomePage() {
                       height={32}
                       style={{ display: "block", flexShrink: 0 }}
                     />
-                    <Title
-                      order={3}
-                      style={{
-                        fontWeight: 600,
-                      }}
-                    >
-                      Demo: Inconvo data agent integrated with in-app assistant
-                    </Title>
+                    <Box>
+                      <Title
+                        order={3}
+                        style={{
+                          fontWeight: 600,
+                          marginBottom: rem(4),
+                        }}
+                      >
+                        Demo
+                      </Title>
+                      <div
+                        style={{
+                          fontSize: rem(14),
+                          color: "var(--mantine-color-dimmed)",
+                        }}
+                      >
+                        A data agent built on Inconvo and integrated with in-app
+                        assistant
+                      </div>
+                    </Box>
                   </Group>
                   <Box style={{ textAlign: "right" }}>
-                    <Button
-                      component="a"
-                      href="https://app.inconvo.ai"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      variant="filled"
-                      size="sm"
-                    >
-                      Build your own data agent
-                    </Button>
+                    <Group gap="xs" justify="flex-end">
+                      <Button
+                        component="a"
+                        href="https://github.com/inconvo-ai/inconvo-demo"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        variant="outline"
+                        size="sm"
+                        leftSection={<IconBrandGithub size={16} />}
+                      >
+                        View source code
+                      </Button>
+                      <Button
+                        component="a"
+                        href="https://app.inconvo.ai"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        variant="filled"
+                        size="sm"
+                      >
+                        Build your own data agent
+                      </Button>
+                    </Group>
                     <div
                       style={{
                         fontSize: rem(11),
@@ -255,7 +281,7 @@ export default function HomePage() {
                 </Title>
               </Card>
 
-              <Box
+              {/* <Box
                 style={{
                   position: "fixed",
                   bottom: 0,
@@ -286,7 +312,7 @@ export default function HomePage() {
                   Click here
                 </a>
                 .
-              </Box>
+              </Box> */}
             </Box>
           </main>
         </Assistant>
