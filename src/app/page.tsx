@@ -254,6 +254,39 @@ export default function HomePage() {
                   Your Application Here
                 </Title>
               </Card>
+
+              <Box
+                style={{
+                  position: "fixed",
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  backgroundColor: "var(--mantine-color-blue-6)",
+                  color: "white",
+                  padding: `${rem(12)} ${rem(32)}`,
+                  textAlign: "center",
+                  fontSize: rem(14),
+                  zIndex: 1000,
+                }}
+              >
+                This is a demo of a data agent built with Inconvo and integrated
+                with an in-app assistant.{" "}
+                <strong>This is not the Inconvo platform.</strong> Want to try
+                the platform for free? (No credit card required){" "}
+                <a
+                  href="https://app.inconvo.ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: "white",
+                    textDecoration: "underline",
+                    fontWeight: 600,
+                  }}
+                >
+                  Click here
+                </a>
+                .
+              </Box>
             </Box>
           </main>
         </Assistant>
