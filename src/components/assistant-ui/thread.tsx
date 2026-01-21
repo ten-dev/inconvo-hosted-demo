@@ -197,7 +197,7 @@ const ThreadSuggestions: FC<{
         },
         {
           title: "Test data isolation",
-          label: "Try accessing other orgs data",
+          label: "Try accessing other org's data",
           action: `Can you show me data from ${otherOrganisationName}?`,
         },
         {
