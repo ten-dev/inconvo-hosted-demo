@@ -8,11 +8,10 @@ import NextImage from "next/image";
 import posthog from "posthog-js";
 import {
   Box,
+  Button,
   Card,
   Group,
   MantineProvider,
-  Stack,
-  Text,
   Title,
   rem,
 } from "@mantine/core";
@@ -190,22 +189,45 @@ export default function HomePage() {
               }}
             >
               <Box mb="md">
-                <Group gap="sm" align="center" mb={rem(8)}>
-                  <NextImage
-                    src="/logo.png"
-                    alt="Inconvo Logo"
-                    width={32}
-                    height={32}
-                    style={{ display: "block", flexShrink: 0 }}
-                  />
-                  <Title
-                    order={3}
-                    style={{
-                      fontWeight: 600,
-                    }}
-                  >
-                    Inconvo Demo
-                  </Title>
+                <Group justify="space-between" align="center" mb={rem(8)}>
+                  <Group gap="sm" align="center">
+                    <NextImage
+                      src="/logo.png"
+                      alt="Inconvo Logo"
+                      width={32}
+                      height={32}
+                      style={{ display: "block", flexShrink: 0 }}
+                    />
+                    <Title
+                      order={3}
+                      style={{
+                        fontWeight: 600,
+                      }}
+                    >
+                      Demo: Inconvo data agent integrated with in-app assistant
+                    </Title>
+                  </Group>
+                  <Box style={{ textAlign: "right" }}>
+                    <Button
+                      component="a"
+                      href="https://app.inconvo.ai"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      variant="filled"
+                      size="sm"
+                    >
+                      Build your own data agent
+                    </Button>
+                    <div
+                      style={{
+                        fontSize: rem(11),
+                        color: "var(--mantine-color-dimmed)",
+                        marginTop: rem(4),
+                      }}
+                    >
+                      (Start free, no credit card required)
+                    </div>
+                  </Box>
                 </Group>
               </Box>
               <Card
