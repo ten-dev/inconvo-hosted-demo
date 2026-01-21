@@ -25,18 +25,29 @@ const parseOrganisationId = (value: unknown): number | null => {
   return null;
 };
 
+const parseUserIdentifier = (value: unknown): string | null => {
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value.trim();
+  }
+  return null;
+};
+
 export async function POST(req: Request) {
   try {
     const body = (await req.json().catch(() => ({}))) as {
       organisationId?: number | string | null;
+      userIdentifier?: string | null;
     };
 
     const organisationId = parseOrganisationId(body.organisationId);
+    const userIdentifier =
+      parseUserIdentifier(body.userIdentifier) ?? `demo_user_${crypto.randomUUID()}`;
+
     const params: ConversationCreateParams = {
-      userContext: {},
+      userIdentifier,
     };
     if (organisationId !== null) {
-      params.userContext.organisationId = organisationId;
+      params.userContext = { organisationId };
     }
 
     const conversation = await inconvo.conversations.create(params);
