@@ -6,7 +6,7 @@ import "@mantine/notifications/styles.css";
 import { useCallback, useEffect, useState } from "react";
 import NextImage from "next/image";
 import posthog from "posthog-js";
-import { IconBrandGithub } from "@tabler/icons-react";
+import { IconBrandGithub, IconExternalLink } from "@tabler/icons-react";
 import {
   Box,
   Button,
@@ -230,6 +230,7 @@ export default function HomePage() {
                         variant="outline"
                         size="sm"
                         leftSection={<IconBrandGithub size={16} />}
+                        rightSection={<IconExternalLink size={14} />}
                       >
                         View source code
                       </Button>
