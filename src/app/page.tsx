@@ -224,7 +224,7 @@ export default function HomePage() {
                     <Group gap="xs" justify="flex-end">
                       <Button
                         component="a"
-                        href="https://github.com/inconvo-ai/inconvo-demo"
+                        href="https://github.com/ten-dev/inconvo-hosted-demo"
                         target="_blank"
                         rel="noopener noreferrer"
                         variant="outline"

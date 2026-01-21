@@ -32,8 +32,8 @@ Inconvo is a platform that connects your database to AI assistants safely and re
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/inconvo-ai/inconvo-demo.git
-cd inconvo-demo
+git clone https://github.com/ten-dev/inconvo-hosted-demo.git
+cd inconvo-hosted-demo
 ```
 
 2. Install dependencies:
