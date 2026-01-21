@@ -59,7 +59,7 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
         behavior,
       });
     },
-    []
+    [],
   );
 
   return (
@@ -121,7 +121,7 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
       {/* Composer area - always outside viewport for consistent behavior */}
       <div
         className="aui-composer-wrapper shrink-0 bg-background px-4 safe-area-pb"
-        style={{ paddingBottom: '6rem' }}
+        style={{ paddingBottom: "6rem" }}
       >
         <div className="relative mx-auto w-full max-w-(--thread-max-width)">
           <ThreadScrollToBottom />
@@ -150,7 +150,7 @@ const ThreadWelcome: FC<{
   organisationSelectorProps?: OrganisationSelectorProps;
 }> = ({ organisationSelectorProps }) => {
   const selectedOrganisation = organisationSelectorProps?.options.find(
-    (org) => org.id === organisationSelectorProps.value
+    (org) => org.id === organisationSelectorProps.value,
   );
 
   const organisationName = selectedOrganisation?.name ?? "this organisation";
@@ -160,11 +160,11 @@ const ThreadWelcome: FC<{
       <div className="aui-thread-welcome-center flex w-full grow flex-col items-center justify-center">
         <div className="aui-thread-welcome-message flex size-full flex-col justify-center px-8">
           <div className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-2 animate-in text-2xl font-semibold duration-300 ease-out">
-            Ask me anything about the store&rsquo;s data
+            Ask me anything
           </div>
           <div className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-2 animate-in text-muted-foreground/65 text-2xl delay-100 duration-300 ease-out">
-            I&rsquo;m connected to the database and scoped to the{" "}
-            {organisationName} organisation.
+            I&rsquo;m connected to the app database and scoped to{" "}
+            {organisationName} data.
           </div>
         </div>
       </div>
@@ -435,7 +435,7 @@ const BranchPicker: FC<BranchPickerPrimitive.Root.Props> = ({
       hideWhenSingleBranch
       className={cn(
         "aui-branch-picker-root text-muted-foreground mr-2 -ml-2 inline-flex items-center text-xs",
-        className
+        className,
       )}
       {...rest}
     >
