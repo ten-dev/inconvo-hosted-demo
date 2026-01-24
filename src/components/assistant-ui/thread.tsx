@@ -70,8 +70,14 @@ export const Thread: FC<ThreadProps> = ({ organisationSelectorProps }) => {
       }}
     >
       <InconvoTools />
+      {/* Chat area label */}
+      <div className="shrink-0 px-4 pt-4 pb-2">
+        <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+          Example application UI (your app)
+        </div>
+      </div>
       {organisationSelectorProps ? (
-        <div className="aui-thread-organisation shrink-0 px-4 pt-4">
+        <div className="aui-thread-organisation shrink-0 px-4">
           <div className="flex items-center justify-between gap-2">
             <OrganisationSelector
               {...organisationSelectorProps}
@@ -169,9 +175,9 @@ const ThreadWelcome: FC<{
           <div className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-2 animate-in text-2xl font-semibold duration-300 ease-out">
             Ask me anything
           </div>
-          <div className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-2 animate-in text-muted-foreground/65 text-2xl delay-100 duration-300 ease-out">
-            I&rsquo;m connected to the app database and scoped to{" "}
-            {organisationName} data.
+          <div className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-2 animate-in text-muted-foreground/65 text-xl delay-100 duration-300 ease-out">
+            This is an example in-app assistant built using Inconvo, querying a
+            multi-tenant ecommerce database.
           </div>
         </div>
       </div>
@@ -188,7 +194,15 @@ const ThreadSuggestions: FC<{
   otherOrganisationName: string;
 }> = ({ currentOrganisationName, otherOrganisationName }) => {
   return (
-    <div className="aui-thread-welcome-suggestions grid w-full gap-2 pb-2 @md:grid-cols-2">
+    <div className="w-full">
+      {/* Try this callout */}
+      <div className="mb-2 rounded-md bg-blue-50/60 px-3 py-2 border border-blue-100">
+        <p className="text-sm text-blue-800">
+          Try this: run a query, switch organisations, and run it again — notice
+          how results stay scoped.
+        </p>
+      </div>
+      <div className="aui-thread-welcome-suggestions grid w-full gap-2 pb-2 @md:grid-cols-2">
       {[
         {
           title: "What can you do?",
@@ -243,6 +257,7 @@ const ThreadSuggestions: FC<{
           </ThreadPrimitive.Suggestion>
         </div>
       ))}
+      </div>
     </div>
   );
 };

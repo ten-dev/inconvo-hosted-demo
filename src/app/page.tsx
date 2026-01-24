@@ -14,12 +14,15 @@ import {
   Group,
   MantineProvider,
   Title,
+  Text,
+  SegmentedControl,
   rem,
 } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { ModalsProvider } from "@mantine/modals";
 
 import { Assistant } from "./assistant";
+import { DatabaseViewer } from "~/components/database-viewer";
 import type {
   OrganisationLoadState,
   OrganisationOption,
@@ -45,6 +48,7 @@ export default function HomePage() {
     number | null
   >(null);
   const [threadResetKey, setThreadResetKey] = useState(0);
+  const [activeView, setActiveView] = useState<"info" | "data">("info");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -189,98 +193,226 @@ export default function HomePage() {
                 flexDirection: "column",
               }}
             >
-              <Box mb="md">
-                <Group justify="space-between" align="flex-start" mb={rem(8)}>
-                  <Group gap="sm" align="flex-start">
-                    <NextImage
-                      src="/logo.png"
-                      alt="Inconvo Logo"
-                      width={32}
-                      height={32}
-                      style={{ display: "block", flexShrink: 0 }}
-                    />
-                    <Box>
-                      <Title
-                        order={3}
-                        style={{
-                          fontWeight: 600,
-                          marginBottom: rem(4),
-                        }}
-                      >
-                        Demo
-                      </Title>
-                      <div
-                        style={{
-                          fontSize: rem(14),
-                          color: "var(--mantine-color-dimmed)",
-                        }}
-                      >
-                        A data agent built on Inconvo and integrated with in-app
-                        assistant
-                      </div>
-                    </Box>
-                  </Group>
-                  <Box style={{ textAlign: "right" }}>
-                    <Group gap="xs" justify="flex-end">
-                      <Button
-                        component="a"
-                        href="https://github.com/ten-dev/inconvo-hosted-demo"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        variant="outline"
-                        size="sm"
-                        leftSection={<IconBrandGithub size={16} />}
-                        rightSection={<IconExternalLink size={14} />}
-                      >
-                        View source code
-                      </Button>
-                      <Button
-                        component="a"
-                        href="https://app.inconvo.ai"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        variant="filled"
-                        size="sm"
-                      >
-                        Build your own data agent
-                      </Button>
-                    </Group>
-                    <div
-                      style={{
-                        fontSize: rem(11),
-                        color: "var(--mantine-color-dimmed)",
-                        marginTop: rem(4),
-                      }}
-                    >
-                      (Start free, no credit card required)
-                    </div>
-                  </Box>
-                </Group>
+              {/* View Switcher */}
+              <Box mb="lg">
+                <SegmentedControl
+                  value={activeView}
+                  onChange={(value) => setActiveView(value as "info" | "data")}
+                  data={[
+                    { label: "Demo Info", value: "info" },
+                    { label: "Connected Data", value: "data" },
+                  ]}
+                  size="md"
+                  radius="md"
+                  fullWidth
+                />
               </Box>
-              <Card
-                withBorder
-                shadow="sm"
-                radius="lg"
-                p="xl"
-                style={{
-                  flex: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Title
-                  order={1}
+
+              {activeView === "info" && (
+                <>
+              {/* Orientation Header */}
+              <Box mb={rem(32)}>
+                <Box mb={rem(32)}>
+                  <Title
+                    order={1}
+                    style={{
+                      fontWeight: 700,
+                      marginBottom: rem(16),
+                      fontSize: rem(36),
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    Live demo: an in-app assistant built with Inconvo
+                  </Title>
+                  <Box style={{ maxWidth: "700px" }}>
+                    <Text
+                      size="lg"
+                      c="dimmed"
+                      style={{ marginBottom: rem(12), lineHeight: 1.6 }}
+                    >
+                      This demo shows how Inconvo is used to build an AI-powered
+                      data agent that connects to an application database and
+                      answers questions in natural language.
+                    </Text>
+                    <Text size="lg" c="dimmed" style={{ lineHeight: 1.6 }}>
+                      It uses a multi-tenant ecommerce dataset (Apple, Tesla,
+                      Logitech) to demonstrate scoped queries, data isolation,
+                      and real-time charts and tables. The UI shown here is
+                      example application code, not the Inconvo product UI.
+                    </Text>
+                  </Box>
+                </Box>
+
+                <Group gap="md" mb={rem(32)}>
+                  <Button
+                    component="a"
+                    href="https://github.com/ten-dev/inconvo-hosted-demo"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variant="outline"
+                    size="md"
+                    leftSection={<IconBrandGithub size={18} />}
+                    rightSection={<IconExternalLink size={16} />}
+                  >
+                    See how this demo was built
+                  </Button>
+                  <Button
+                    component="a"
+                    href="https://app.inconvo.ai"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variant="filled"
+                    size="md"
+                    leftSection={
+                      <NextImage
+                        src="/logo.png"
+                        alt="Inconvo"
+                        width={18}
+                        height={18}
+                      />
+                    }
+                  >
+                    Build a data agent for your app
+                  </Button>
+                </Group>
+
+                {/* How this demo works */}
+                <Card
+                  withBorder
+                  radius="md"
+                  p="md"
                   style={{
-                    fontSize: rem(72),
-                    fontWeight: 900,
-                    textAlign: "center",
-                    color: "var(--mantine-color-gray-4)",
+                    backgroundColor: "rgba(228, 240, 255, 0.4)",
+                    borderColor: "var(--mantine-color-gray-3)",
                   }}
                 >
-                  Your Application Here
-                </Title>
-              </Card>
+                  <Title
+                    order={4}
+                    style={{
+                      fontWeight: 500,
+                      marginBottom: rem(14),
+                      fontSize: rem(16),
+                    }}
+                  >
+                    How this demo works
+                  </Title>
+                  <Box
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: rem(10),
+                    }}
+                  >
+                    <Box
+                      style={{
+                        display: "flex",
+                        gap: rem(10),
+                        alignItems: "flex-start",
+                      }}
+                    >
+                      <Box
+                        style={{
+                          backgroundColor: "var(--mantine-color-blue-6)",
+                          color: "white",
+                          borderRadius: "50%",
+                          width: rem(24),
+                          height: rem(24),
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: rem(13),
+                          fontWeight: 600,
+                          flexShrink: 0,
+                        }}
+                      >
+                        1
+                      </Box>
+                      <Text size="sm" style={{ flex: 1, paddingTop: rem(2) }}>
+                        Natural language questions are converted into verified
+                        SQL using Inconvo
+                      </Text>
+                    </Box>
+                    <Box
+                      style={{
+                        display: "flex",
+                        gap: rem(10),
+                        alignItems: "flex-start",
+                      }}
+                    >
+                      <Box
+                        style={{
+                          backgroundColor: "var(--mantine-color-blue-6)",
+                          color: "white",
+                          borderRadius: "50%",
+                          width: rem(24),
+                          height: rem(24),
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: rem(13),
+                          fontWeight: 600,
+                          flexShrink: 0,
+                        }}
+                      >
+                        2
+                      </Box>
+                      <Text size="sm" style={{ flex: 1, paddingTop: rem(2) }}>
+                        Queries are automatically scoped to the selected
+                        organisation (multi-tenant isolation)
+                      </Text>
+                    </Box>
+                    <Box
+                      style={{
+                        display: "flex",
+                        gap: rem(10),
+                        alignItems: "flex-start",
+                      }}
+                    >
+                      <Box
+                        style={{
+                          backgroundColor: "var(--mantine-color-blue-6)",
+                          color: "white",
+                          borderRadius: "50%",
+                          width: rem(24),
+                          height: rem(24),
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: rem(13),
+                          fontWeight: 600,
+                          flexShrink: 0,
+                        }}
+                      >
+                        3
+                      </Box>
+                      <Text size="sm" style={{ flex: 1, paddingTop: rem(2) }}>
+                        The app renders structured results as tables and charts
+                      </Text>
+                    </Box>
+                  </Box>
+                </Card>
+              </Box>
+              </>
+              )}
+
+              {activeView === "data" && (
+                <Card
+                  withBorder
+                  shadow="sm"
+                  radius="lg"
+                  p="xl"
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <Title order={3} mb="md">
+                    Connected Database
+                  </Title>
+                  <DatabaseViewer />
+                </Card>
+              )}
 
               {/* <Box
                 style={{
