@@ -16,10 +16,8 @@ import {
   useState,
 } from "react";
 import posthog from "posthog-js";
-import type {
-  ConversationCreateResponse,
-  ResponseCreateResponse,
-} from "@inconvoai/node/resources/conversations";
+import type { ConversationCreateResponse } from "@inconvoai/node/resources/agents/conversations/conversations";
+import type { ResponseCreateResponse } from "@inconvoai/node/resources/agents/conversations/response/response";
 import type { ResponseStreamEvent } from "@inconvoai/node";
 
 type ResponseCreateResponseOptionalId = Omit<

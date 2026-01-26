@@ -1,5 +1,5 @@
 import Inconvo from "@inconvoai/node";
-import type { ConversationCreateParams } from "@inconvoai/node/resources/conversations";
+import type { ConversationCreateParams } from "@inconvoai/node/resources/agents/conversations/conversations";
 import { NextResponse } from "next/server";
 
 const inconvo = new Inconvo({
@@ -9,6 +9,8 @@ const inconvo = new Inconvo({
     process.env.INCONVO_BASE_URL ??
     undefined,
 });
+
+const AGENT_ID = process.env.INCONVO_AGENT_ID ?? "";
 
 const parseOrganisationId = (value: unknown): number | null => {
   if (typeof value === "number" && Number.isFinite(value)) {
@@ -50,7 +52,7 @@ export async function POST(req: Request) {
       params.userContext = { organisationId };
     }
 
-    const conversation = await inconvo.conversations.create(params);
+    const conversation = await inconvo.agents.conversations.create(AGENT_ID, params);
 
     return NextResponse.json(conversation);
   } catch (error) {
@@ -74,7 +76,9 @@ export async function GET(req: Request) {
   try {
     if (conversationId) {
       const conversation =
-        await inconvo.conversations.retrieve(conversationId);
+        await inconvo.agents.conversations.retrieve(conversationId, {
+          agentId: AGENT_ID,
+        });
       return NextResponse.json(conversation);
     }
 
@@ -82,7 +86,7 @@ export async function GET(req: Request) {
       organisationId === null
         ? { limit: 50 }
         : { limit: 50, userContext: { organisationId } };
-    const conversations = await inconvo.conversations.list(listParams);
+    const conversations = await inconvo.agents.conversations.list(AGENT_ID, listParams);
 
     return NextResponse.json(conversations);
   } catch (error) {

@@ -9,6 +9,8 @@ const inconvo = new Inconvo({
     undefined,
 });
 
+const AGENT_ID = process.env.INCONVO_AGENT_ID ?? "";
+
 export async function POST(req: Request) {
   const {
     message,
@@ -26,7 +28,8 @@ export async function POST(req: Request) {
   }
 
   try {
-    const sseStream = inconvo.conversations.response.create(conversationId, {
+    const sseStream = inconvo.agents.conversations.response.create(conversationId, {
+      agentId: AGENT_ID,
       message,
       stream: true,
     });
